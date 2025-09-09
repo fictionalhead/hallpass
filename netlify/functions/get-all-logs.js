@@ -1,4 +1,8 @@
 // Netlify Function to retrieve all hall pass logs (admin only)
+// Uses server-side file storage
+
+const fs = require('fs').promises;
+const path = require('path');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -22,44 +26,47 @@ exports.handler = async (event, context) => {
             };
         }
         
-        // Get logs from Netlify Blobs
-        const { getStore } = await import('@netlify/blobs');
-        const store = getStore('hallpass-logs');
-        
-        // Get all teacher folders
+        const dataDir = '/tmp/hallpass-data';
         const allLogs = [];
         const teachers = new Set();
-        
-        // List all keys to find teacher folders
-        const { blobs } = await store.list();
-        
-        for (const blob of blobs) {
-            // Check if this is a teacher passes file
-            if (blob.key.startsWith('teacher_') && blob.key.endsWith('/passes')) {
+
+        try {
+            // Read all teacher files from the data directory
+            const files = await fs.readdir(dataDir);
+            const jsonFiles = files.filter(file => file.endsWith('.json'));
+
+            for (const file of jsonFiles) {
                 try {
-                    const teacherLogs = await store.get(blob.key, { type: 'json' });
-                    if (teacherLogs && Array.isArray(teacherLogs)) {
-                        // Extract teacher identifier from the key
-                        const teacherMatch = blob.key.match(/teacher_([^/]+)\/passes/);
-                        if (teacherMatch) {
-                            // Add teacher info to each log entry
-                            teacherLogs.forEach(log => {
-                                if (log.teacherEmail) {
-                                    teachers.add(log.teacherEmail);
-                                }
-                            });
-                            allLogs.push(...teacherLogs);
-                        }
+                    const filePath = path.join(dataDir, file);
+                    const fileData = await fs.readFile(filePath, 'utf8');
+                    const teacherLogs = JSON.parse(fileData);
+                    
+                    if (Array.isArray(teacherLogs)) {
+                        // Extract teacher email from filename (remove .json extension)
+                        const teacherEmail = file.replace('.json', '').replace(/_/g, '@');
+                        
+                        // Add teacher to set and include logs
+                        teacherLogs.forEach(log => {
+                            if (log.teacherEmail) {
+                                teachers.add(log.teacherEmail);
+                            }
+                            allLogs.push(log);
+                        });
                     }
-                } catch (e) {
-                    console.log(`Error reading logs from ${blob.key}:`, e);
+                } catch (err) {
+                    console.log(`Error reading file ${file}:`, err.message);
                 }
             }
+        } catch (err) {
+            // Data directory doesn't exist yet
+            console.log('No data directory found, returning empty results');
         }
-        
+
         // Sort all logs by timestamp (newest first)
         allLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-        
+
+        console.log(`Admin returning ${allLogs.length} total logs from ${teachers.size} teachers`);
+
         return {
             statusCode: 200,
             headers: {

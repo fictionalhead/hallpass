@@ -1,4 +1,8 @@
 // Netlify Function to retrieve hall pass logs
+// Uses server-side file storage
+
+const fs = require('fs').promises;
+const path = require('path');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -22,22 +26,19 @@ exports.handler = async (event, context) => {
             };
         }
         
-        // Get logs from Netlify Blobs
-        const { getStore } = await import('@netlify/blobs');
-        const store = getStore('hallpass-logs');
-        
-        // Use teacher email as folder/key prefix
-        const teacherKey = `teacher_${teacherEmail.replace(/[^a-zA-Z0-9]/g, '_')}/passes`;
-        
-        // Get current logs for this teacher
+        // Create safe filename from teacher email
+        const safeTeacherEmail = teacherEmail.replace(/[^a-zA-Z0-9@.-]/g, '_');
+        const dataDir = '/tmp/hallpass-data';
+        const teacherFile = path.join(dataDir, `${safeTeacherEmail}.json`);
+
+        // Load logs for this teacher
         let logs = [];
         try {
-            const existingLogs = await store.get(teacherKey, { type: 'json' });
-            if (existingLogs) {
-                logs = existingLogs;
-            }
-        } catch (e) {
-            console.log(`No existing logs found for teacher ${teacherEmail}`);
+            const existingData = await fs.readFile(teacherFile, 'utf8');
+            logs = JSON.parse(existingData);
+        } catch (err) {
+            // File doesn't exist, return empty logs
+            console.log(`No logs found for teacher: ${teacherEmail}`);
         }
 
         // Filter by date if requested
@@ -56,6 +57,8 @@ exports.handler = async (event, context) => {
                 logs = logs.slice(0, limitNum);
             }
         }
+
+        console.log(`Returning ${logs.length} logs for teacher: ${teacherEmail}`);
 
         return {
             statusCode: 200,

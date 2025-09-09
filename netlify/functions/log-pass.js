@@ -1,5 +1,8 @@
 // Netlify Function to log hall passes
-// Uses Netlify Blobs for persistent storage
+// Uses server-side file storage
+
+const fs = require('fs').promises;
+const path = require('path');
 
 exports.handler = async (event, context) => {
     // Only allow POST requests
@@ -21,23 +24,26 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Get existing logs from Netlify Blobs
-        const { getStore } = await import('@netlify/blobs');
-        const store = getStore('hallpass-logs');
-        
-        // Use teacher email as folder/key prefix
-        const teacherKey = `teacher_${pass.teacherEmail.replace(/[^a-zA-Z0-9]/g, '_')}/passes`;
-        
-        // Get current logs for this teacher
+        // Create safe filename from teacher email
+        const safeTeacherEmail = pass.teacherEmail.replace(/[^a-zA-Z0-9@.-]/g, '_');
+        const dataDir = '/tmp/hallpass-data';
+        const teacherFile = path.join(dataDir, `${safeTeacherEmail}.json`);
+
+        // Ensure data directory exists
+        try {
+            await fs.mkdir(dataDir, { recursive: true });
+        } catch (err) {
+            // Directory might already exist
+        }
+
+        // Load existing logs for this teacher
         let logs = [];
         try {
-            const existingLogs = await store.get(teacherKey, { type: 'json' });
-            if (existingLogs) {
-                logs = existingLogs;
-            }
-        } catch (e) {
-            // No existing logs for this teacher, start with empty array
-            console.log(`No existing logs found for teacher ${pass.teacherEmail}, starting fresh`);
+            const existingData = await fs.readFile(teacherFile, 'utf8');
+            logs = JSON.parse(existingData);
+        } catch (err) {
+            // File doesn't exist yet, start with empty array
+            console.log(`Creating new log file for teacher: ${pass.teacherEmail}`);
         }
 
         // Add new pass to the beginning
@@ -48,15 +54,10 @@ exports.handler = async (event, context) => {
             logs = logs.slice(0, 1000);
         }
 
-        // Save updated logs for this teacher
-        await store.setJSON(teacherKey, logs);
+        // Save updated logs
+        await fs.writeFile(teacherFile, JSON.stringify(logs, null, 2));
 
-        // Also save individual pass for archival (with date-based key and teacher folder)
-        const date = new Date(pass.timestamp);
-        const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        const teacherFolder = `teacher_${pass.teacherEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
-        const passKey = `${teacherFolder}/archive/${dateKey}/${pass.id}`;
-        await store.setJSON(passKey, pass);
+        console.log(`Pass saved for ${pass.teacherEmail}: ${pass.name} to ${pass.location}`);
 
         return {
             statusCode: 200,
