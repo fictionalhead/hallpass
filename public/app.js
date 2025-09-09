@@ -184,6 +184,7 @@ async function handleFormSubmit(e) {
 // Save pass to backend
 async function savePassToBackend(pass) {
     try {
+        console.log('Saving pass:', pass);
         const response = await fetch('/api/log-pass', {
             method: 'POST',
             headers: {
@@ -193,7 +194,11 @@ async function savePassToBackend(pass) {
         });
         
         if (!response.ok) {
-            console.error('Failed to save pass to backend');
+            const errorText = await response.text();
+            console.error('Failed to save pass to backend:', response.status, errorText);
+        } else {
+            const result = await response.json();
+            console.log('Pass saved successfully:', result);
         }
     } catch (error) {
         console.error('Error saving pass:', error);
@@ -204,11 +209,16 @@ async function savePassToBackend(pass) {
 // Load pass log from backend
 async function loadPassLog() {
     try {
+        console.log('Loading logs for teacher:', teacherEmail);
         const response = await fetch(`/api/get-logs?teacherEmail=${encodeURIComponent(teacherEmail)}`);
         if (response.ok) {
             const data = await response.json();
+            console.log('Loaded pass data:', data);
             passLog = data.logs || [];
             updatePassLog();
+        } else {
+            const errorText = await response.text();
+            console.error('Failed to load logs:', response.status, errorText);
         }
     } catch (error) {
         console.error('Error loading pass log:', error);
@@ -337,7 +347,7 @@ function escapeHtml(text) {
 function setupAdminView() {
     // Update header to show admin status
     const header = document.querySelector('header h1');
-    header.innerHTML = 'Hall Pass Generator <span style="color: #dc3545; font-size: 0.7em;">(Admin View)</span>';
+    header.innerHTML = 'Hall Pass Generator <span style="color: #644186; font-size: 0.7em;">(Admin View)</span>';
     
     // Hide the form for admin
     const formSection = document.querySelector('.form-section');
@@ -363,9 +373,11 @@ function setupAdminView() {
 // Load all teachers' logs (admin only)
 async function loadAllTeachersLogs() {
     try {
+        console.log('Loading all teachers logs for admin:', teacherEmail);
         const response = await fetch(`/api/get-all-logs?adminEmail=${encodeURIComponent(teacherEmail)}`);
         if (response.ok) {
             const data = await response.json();
+            console.log('Admin loaded data:', data);
             passLog = data.logs || [];
             
             // Populate teacher filter
@@ -386,7 +398,8 @@ async function loadAllTeachersLogs() {
             
             updatePassLog();
         } else {
-            console.error('Failed to load all logs - unauthorized or error');
+            const errorText = await response.text();
+            console.error('Failed to load all logs:', response.status, errorText);
         }
     } catch (error) {
         console.error('Error loading all logs:', error);
