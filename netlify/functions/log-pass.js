@@ -1,8 +1,7 @@
 // Netlify Function to log hall passes
-// Uses server-side file storage
+// Uses Supabase database for persistent storage
 
-const fs = require('fs').promises;
-const path = require('path');
+const database = require('./lib/database');
 
 exports.handler = async (event, context) => {
     // Only allow POST requests
@@ -24,40 +23,9 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Create safe filename from teacher email
-        const safeTeacherEmail = pass.teacherEmail.replace(/[^a-zA-Z0-9]/g, '_');
-        const dataDir = path.join(process.cwd(), 'data');
-        const teacherFile = path.join(dataDir, `teacher_${safeTeacherEmail}.json`);
-
-        // Ensure data directory exists
-        try {
-            await fs.mkdir(dataDir, { recursive: true });
-        } catch (err) {
-            // Directory might already exist
-        }
-
-        // Load existing logs for this teacher
-        let logs = [];
-        try {
-            const existingData = await fs.readFile(teacherFile, 'utf8');
-            logs = JSON.parse(existingData);
-        } catch (err) {
-            // File doesn't exist yet, start with empty array
-            console.log(`Creating new log file for teacher: ${pass.teacherEmail}`);
-        }
-
-        // Add new pass to the beginning
-        logs.unshift(pass);
-        
-        // Keep only last 1000 passes per teacher to prevent unlimited growth
-        if (logs.length > 1000) {
-            logs = logs.slice(0, 1000);
-        }
-
-        // Save updated logs
-        await fs.writeFile(teacherFile, JSON.stringify(logs, null, 2));
-
-        console.log(`Pass saved for ${pass.teacherEmail}: ${pass.name} to ${pass.location}`);
+        // Save to Supabase database
+        console.log(`Saving pass to database: ${pass.teacherEmail} - ${pass.name} to ${pass.location}`);
+        await database.savePass(pass);
 
         return {
             statusCode: 200,
@@ -66,8 +34,8 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({ 
                 success: true, 
-                message: 'Pass logged successfully',
-                passId: pass.id 
+                message: 'Pass logged successfully in database',
+                passId: pass.id
             })
         };
     } catch (error) {

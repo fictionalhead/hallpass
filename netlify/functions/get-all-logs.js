@@ -1,8 +1,7 @@
 // Netlify Function to retrieve all hall pass logs (admin only)
-// Uses server-side file storage
+// Uses Supabase database for persistent storage
 
-const fs = require('fs').promises;
-const path = require('path');
+const database = require('./lib/database');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -26,46 +25,12 @@ exports.handler = async (event, context) => {
             };
         }
         
-        const dataDir = path.join(process.cwd(), 'data');
-        const allLogs = [];
-        const teachers = new Set();
+        console.log('Admin loading all logs from database');
+        
+        // Get all logs from Supabase database
+        const { passes, teachers } = await database.getAllPasses();
 
-        try {
-            // Read all teacher files from the data directory
-            const files = await fs.readdir(dataDir);
-            const jsonFiles = files.filter(file => file.endsWith('.json') && file.startsWith('teacher_'));
-
-            for (const file of jsonFiles) {
-                try {
-                    const filePath = path.join(dataDir, file);
-                    const fileData = await fs.readFile(filePath, 'utf8');
-                    const teacherLogs = JSON.parse(fileData);
-                    
-                    if (Array.isArray(teacherLogs)) {
-                        // Extract teacher email from filename (remove teacher_ prefix and .json extension)
-                        const teacherEmail = file.replace('teacher_', '').replace('.json', '').replace(/_/g, '@');
-                        
-                        // Add teacher to set and include logs
-                        teacherLogs.forEach(log => {
-                            if (log.teacherEmail) {
-                                teachers.add(log.teacherEmail);
-                            }
-                            allLogs.push(log);
-                        });
-                    }
-                } catch (err) {
-                    console.log(`Error reading file ${file}:`, err.message);
-                }
-            }
-        } catch (err) {
-            // Data directory doesn't exist yet
-            console.log('No data directory found, returning empty results');
-        }
-
-        // Sort all logs by timestamp (newest first)
-        allLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-
-        console.log(`Admin returning ${allLogs.length} total logs from ${teachers.size} teachers`);
+        console.log(`Admin returning ${passes.length} total logs from ${teachers.length} teachers`);
 
         return {
             statusCode: 200,
@@ -75,9 +40,9 @@ exports.handler = async (event, context) => {
             },
             body: JSON.stringify({ 
                 success: true,
-                logs: allLogs,
-                count: allLogs.length,
-                teachers: Array.from(teachers).sort()
+                logs: passes,
+                count: passes.length,
+                teachers: teachers
             })
         };
     } catch (error) {

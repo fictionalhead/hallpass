@@ -1,8 +1,7 @@
 // Netlify Function to retrieve hall pass logs
-// Uses server-side file storage
+// Uses Supabase database for persistent storage
 
-const fs = require('fs').promises;
-const path = require('path');
+const database = require('./lib/database');
 
 exports.handler = async (event, context) => {
     // Only allow GET requests
@@ -26,20 +25,10 @@ exports.handler = async (event, context) => {
             };
         }
         
-        // Create safe filename from teacher email
-        const safeTeacherEmail = teacherEmail.replace(/[^a-zA-Z0-9]/g, '_');
-        const dataDir = path.join(process.cwd(), 'data');
-        const teacherFile = path.join(dataDir, `teacher_${safeTeacherEmail}.json`);
-
-        // Load logs for this teacher
-        let logs = [];
-        try {
-            const existingData = await fs.readFile(teacherFile, 'utf8');
-            logs = JSON.parse(existingData);
-        } catch (err) {
-            // File doesn't exist, return empty logs
-            console.log(`No logs found for teacher: ${teacherEmail}`);
-        }
+        console.log(`Loading logs from database for teacher: ${teacherEmail}`);
+        
+        // Get logs from Supabase database
+        let logs = await database.getPassesForTeacher(teacherEmail, limit ? parseInt(limit) : 1000);
 
         // Filter by date if requested
         if (date) {
@@ -48,14 +37,6 @@ exports.handler = async (event, context) => {
                 const logDate = new Date(log.timestamp);
                 return logDate.toDateString() === filterDate.toDateString();
             });
-        }
-
-        // Limit results if requested
-        if (limit) {
-            const limitNum = parseInt(limit, 10);
-            if (!isNaN(limitNum) && limitNum > 0) {
-                logs = logs.slice(0, limitNum);
-            }
         }
 
         console.log(`Returning ${logs.length} logs for teacher: ${teacherEmail}`);

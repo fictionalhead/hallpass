@@ -184,7 +184,7 @@ async function handleFormSubmit(e) {
 // Save pass to backend
 async function savePassToBackend(pass) {
     try {
-        console.log('Saving pass:', pass);
+        console.log('Saving pass to database:', pass);
         const response = await fetch('/api/log-pass', {
             method: 'POST',
             headers: {
@@ -195,61 +195,36 @@ async function savePassToBackend(pass) {
         
         if (!response.ok) {
             const errorText = await response.text();
-            console.error('Failed to save pass to backend:', response.status, errorText);
+            console.error('Failed to save pass to database:', response.status, errorText);
         } else {
             const result = await response.json();
-            console.log('Pass saved successfully:', result);
+            console.log('Pass saved successfully to database:', result);
         }
     } catch (error) {
-        console.error('Error saving pass:', error);
+        console.error('Error saving pass to database:', error);
     }
-    
-    // ALWAYS save to localStorage as primary storage for now
-    console.log('Also saving to localStorage as backup');
-    let localLogs = [];
-    try {
-        const stored = localStorage.getItem(`passLog_${teacherEmail}`);
-        if (stored) {
-            localLogs = JSON.parse(stored);
-        }
-    } catch (e) {
-        console.error('Error reading localStorage:', e);
-    }
-    
-    // Add new pass to beginning and save
-    localLogs.unshift(pass);
-    localStorage.setItem(`passLog_${teacherEmail}`, JSON.stringify(localLogs));
-    console.log('Saved to localStorage, total passes:', localLogs.length);
 }
 
 // Load pass log from backend
 async function loadPassLog() {
     try {
-        console.log('Loading logs for teacher:', teacherEmail);
+        console.log('Loading logs from database for teacher:', teacherEmail);
         const response = await fetch(`/api/get-logs?teacherEmail=${encodeURIComponent(teacherEmail)}`);
         if (response.ok) {
             const data = await response.json();
-            console.log('Loaded pass data from server:', data);
+            console.log('Loaded pass data from database:', data);
             passLog = data.logs || [];
             updatePassLog();
         } else {
             const errorText = await response.text();
-            console.error('Failed to load logs:', response.status, errorText);
-            // Use localStorage as fallback
-            const stored = localStorage.getItem(`passLog_${teacherEmail}`);
-            if (stored) {
-                passLog = JSON.parse(stored);
-                updatePassLog();
-            }
-        }
-    } catch (error) {
-        console.error('Error loading pass log:', error);
-        // Use localStorage as fallback
-        const stored = localStorage.getItem(`passLog_${teacherEmail}`);
-        if (stored) {
-            passLog = JSON.parse(stored);
+            console.error('Failed to load logs from database:', response.status, errorText);
+            passLog = [];
             updatePassLog();
         }
+    } catch (error) {
+        console.error('Error loading pass log from database:', error);
+        passLog = [];
+        updatePassLog();
     }
 }
 
@@ -395,11 +370,11 @@ function setupAdminView() {
 // Load all teachers' logs (admin only)
 async function loadAllTeachersLogs() {
     try {
-        console.log('Loading all teachers logs for admin:', teacherEmail);
+        console.log('Loading all teachers logs from database for admin:', teacherEmail);
         const response = await fetch(`/api/get-all-logs?adminEmail=${encodeURIComponent(teacherEmail)}`);
         if (response.ok) {
             const data = await response.json();
-            console.log('Admin loaded data from server:', data);
+            console.log('Admin loaded data from database:', data);
             passLog = data.logs || [];
             
             // Populate teacher filter
@@ -421,10 +396,10 @@ async function loadAllTeachersLogs() {
             updatePassLog();
         } else {
             const errorText = await response.text();
-            console.error('Failed to load all logs:', response.status, errorText);
+            console.error('Failed to load all logs from database:', response.status, errorText);
         }
     } catch (error) {
-        console.error('Error loading all logs:', error);
+        console.error('Error loading all logs from database:', error);
     }
 }
 
