@@ -224,39 +224,32 @@ async function savePassToBackend(pass) {
 
 // Load pass log from backend
 async function loadPassLog() {
-    console.log('Loading logs for teacher:', teacherEmail);
-    
-    // For now, load primarily from localStorage since server storage doesn't persist
-    const stored = localStorage.getItem(`passLog_${teacherEmail}`);
-    if (stored) {
-        try {
-            passLog = JSON.parse(stored);
-            console.log('Loaded from localStorage:', passLog.length, 'passes');
-            updatePassLog();
-            return;
-        } catch (e) {
-            console.error('Error parsing localStorage:', e);
-        }
-    }
-    
-    // If no localStorage data, try server as fallback
     try {
+        console.log('Loading logs for teacher:', teacherEmail);
         const response = await fetch(`/api/get-logs?teacherEmail=${encodeURIComponent(teacherEmail)}`);
         if (response.ok) {
             const data = await response.json();
-            console.log('Loaded from server (fallback):', data);
+            console.log('Loaded pass data from server:', data);
             passLog = data.logs || [];
             updatePassLog();
         } else {
             const errorText = await response.text();
-            console.error('Failed to load logs from server:', response.status, errorText);
-            passLog = [];
-            updatePassLog();
+            console.error('Failed to load logs:', response.status, errorText);
+            // Use localStorage as fallback
+            const stored = localStorage.getItem(`passLog_${teacherEmail}`);
+            if (stored) {
+                passLog = JSON.parse(stored);
+                updatePassLog();
+            }
         }
     } catch (error) {
-        console.error('Error loading from server:', error);
-        passLog = [];
-        updatePassLog();
+        console.error('Error loading pass log:', error);
+        // Use localStorage as fallback
+        const stored = localStorage.getItem(`passLog_${teacherEmail}`);
+        if (stored) {
+            passLog = JSON.parse(stored);
+            updatePassLog();
+        }
     }
 }
 
@@ -401,57 +394,38 @@ function setupAdminView() {
 
 // Load all teachers' logs (admin only)
 async function loadAllTeachersLogs() {
-    console.log('Loading all teachers logs for admin:', teacherEmail);
-    
-    // Since server storage doesn't persist, aggregate from localStorage
-    const allLogs = [];
-    const teachers = new Set();
-    
-    // Check localStorage for all teacher data
-    for (let i = 0; i < localStorage.length; i++) {
-        const key = localStorage.key(i);
-        if (key && key.startsWith('passLog_')) {
-            try {
-                const teacherEmail = key.replace('passLog_', '');
-                const logs = JSON.parse(localStorage.getItem(key));
+    try {
+        console.log('Loading all teachers logs for admin:', teacherEmail);
+        const response = await fetch(`/api/get-all-logs?adminEmail=${encodeURIComponent(teacherEmail)}`);
+        if (response.ok) {
+            const data = await response.json();
+            console.log('Admin loaded data from server:', data);
+            passLog = data.logs || [];
+            
+            // Populate teacher filter
+            if (data.teachers && data.teachers.length > 0) {
+                const filterSelect = document.getElementById('teacher-filter');
+                data.teachers.forEach(teacher => {
+                    const option = document.createElement('option');
+                    option.value = teacher;
+                    option.textContent = teacher;
+                    filterSelect.appendChild(option);
+                });
                 
-                if (Array.isArray(logs)) {
-                    logs.forEach(log => {
-                        if (log.teacherEmail) {
-                            teachers.add(log.teacherEmail);
-                        }
-                        allLogs.push(log);
-                    });
-                }
-            } catch (e) {
-                console.error('Error reading localStorage for', key, e);
+                // Add filter event listener
+                filterSelect.addEventListener('change', (e) => {
+                    filterLogsByTeacher(e.target.value, data.logs);
+                });
             }
+            
+            updatePassLog();
+        } else {
+            const errorText = await response.text();
+            console.error('Failed to load all logs:', response.status, errorText);
         }
+    } catch (error) {
+        console.error('Error loading all logs:', error);
     }
-    
-    // Sort all logs by timestamp (newest first)
-    allLogs.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
-    
-    console.log(`Admin found ${allLogs.length} total passes from ${teachers.size} teachers in localStorage`);
-    
-    // Populate teacher filter
-    if (teachers.size > 0) {
-        const filterSelect = document.getElementById('teacher-filter');
-        Array.from(teachers).sort().forEach(teacher => {
-            const option = document.createElement('option');
-            option.value = teacher;
-            option.textContent = teacher;
-            filterSelect.appendChild(option);
-        });
-        
-        // Add filter event listener
-        filterSelect.addEventListener('change', (e) => {
-            filterLogsByTeacher(e.target.value, allLogs);
-        });
-    }
-    
-    passLog = allLogs;
-    updatePassLog();
 }
 
 // Filter logs by teacher

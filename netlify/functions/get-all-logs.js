@@ -26,14 +26,14 @@ exports.handler = async (event, context) => {
             };
         }
         
-        const dataDir = '/tmp/hallpass-data';
+        const dataDir = path.join(process.cwd(), 'data');
         const allLogs = [];
         const teachers = new Set();
 
         try {
             // Read all teacher files from the data directory
             const files = await fs.readdir(dataDir);
-            const jsonFiles = files.filter(file => file.endsWith('.json'));
+            const jsonFiles = files.filter(file => file.endsWith('.json') && file.startsWith('teacher_'));
 
             for (const file of jsonFiles) {
                 try {
@@ -42,8 +42,8 @@ exports.handler = async (event, context) => {
                     const teacherLogs = JSON.parse(fileData);
                     
                     if (Array.isArray(teacherLogs)) {
-                        // Extract teacher email from filename (remove .json extension)
-                        const teacherEmail = file.replace('.json', '').replace(/_/g, '@');
+                        // Extract teacher email from filename (remove teacher_ prefix and .json extension)
+                        const teacherEmail = file.replace('teacher_', '').replace('.json', '').replace(/_/g, '@');
                         
                         // Add teacher to set and include logs
                         teacherLogs.forEach(log => {

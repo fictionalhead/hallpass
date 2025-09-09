@@ -27,9 +27,9 @@ exports.handler = async (event, context) => {
         }
         
         // Create safe filename from teacher email
-        const safeTeacherEmail = teacherEmail.replace(/[^a-zA-Z0-9@.-]/g, '_');
-        const dataDir = '/tmp/hallpass-data';
-        const teacherFile = path.join(dataDir, `${safeTeacherEmail}.json`);
+        const safeTeacherEmail = teacherEmail.replace(/[^a-zA-Z0-9]/g, '_');
+        const dataDir = path.join(process.cwd(), 'data');
+        const teacherFile = path.join(dataDir, `teacher_${safeTeacherEmail}.json`);
 
         // Load logs for this teacher
         let logs = [];
