@@ -13,11 +13,11 @@ exports.handler = async (event, context) => {
     try {
         const pass = JSON.parse(event.body);
         
-        // Validate pass data
-        if (!pass.id || !pass.name || !pass.location || !pass.timestamp) {
+        // Validate pass data - now also requires teacherEmail
+        if (!pass.id || !pass.name || !pass.location || !pass.timestamp || !pass.teacherEmail) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Invalid pass data' })
+                body: JSON.stringify({ error: 'Invalid pass data - teacher email required' })
             };
         }
 
@@ -25,33 +25,37 @@ exports.handler = async (event, context) => {
         const { getStore } = await import('@netlify/blobs');
         const store = getStore('hallpass-logs');
         
-        // Get current logs
+        // Use teacher email as folder/key prefix
+        const teacherKey = `teacher_${pass.teacherEmail.replace(/[^a-zA-Z0-9]/g, '_')}/passes`;
+        
+        // Get current logs for this teacher
         let logs = [];
         try {
-            const existingLogs = await store.get('passes', { type: 'json' });
+            const existingLogs = await store.get(teacherKey, { type: 'json' });
             if (existingLogs) {
                 logs = existingLogs;
             }
         } catch (e) {
-            // No existing logs, start with empty array
-            console.log('No existing logs found, starting fresh');
+            // No existing logs for this teacher, start with empty array
+            console.log(`No existing logs found for teacher ${pass.teacherEmail}, starting fresh`);
         }
 
         // Add new pass to the beginning
         logs.unshift(pass);
         
-        // Keep only last 1000 passes to prevent unlimited growth
+        // Keep only last 1000 passes per teacher to prevent unlimited growth
         if (logs.length > 1000) {
             logs = logs.slice(0, 1000);
         }
 
-        // Save updated logs
-        await store.setJSON('passes', logs);
+        // Save updated logs for this teacher
+        await store.setJSON(teacherKey, logs);
 
-        // Also save individual pass for archival (with date-based key)
+        // Also save individual pass for archival (with date-based key and teacher folder)
         const date = new Date(pass.timestamp);
         const dateKey = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
-        const passKey = `archive/${dateKey}/${pass.id}`;
+        const teacherFolder = `teacher_${pass.teacherEmail.replace(/[^a-zA-Z0-9]/g, '_')}`;
+        const passKey = `${teacherFolder}/archive/${dateKey}/${pass.id}`;
         await store.setJSON(passKey, pass);
 
         return {

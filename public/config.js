@@ -4,7 +4,7 @@
 const HALLPASS_CONFIG = {
     // School information
     school: {
-        name: "EAGLE HIGH SCHOOL",
+        name: "Wyoming Public Schools",
         passTitle: "HALL PASS"
     },
     
@@ -27,8 +27,8 @@ const HALLPASS_CONFIG = {
     // Pass styling
     passStyle: {
         borderWidth: "4px",
-        borderColor: "#1e293b",
-        backgroundColor: "#f8fafc",
+        borderColor: "#644186",
+        backgroundColor: "#ffffff",
         fontFamily: "'Courier New', monospace"
     },
     

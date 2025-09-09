@@ -10,24 +10,35 @@ exports.handler = async (event, context) => {
     }
 
     try {
+        // Parse query parameters - now requires teacherEmail
+        const queryParams = event.queryStringParameters || {};
+        const { teacherEmail, date, limit } = queryParams;
+        
+        // Teacher email is required
+        if (!teacherEmail) {
+            return {
+                statusCode: 400,
+                body: JSON.stringify({ error: 'Teacher email is required' })
+            };
+        }
+        
         // Get logs from Netlify Blobs
         const { getStore } = await import('@netlify/blobs');
         const store = getStore('hallpass-logs');
         
-        // Get current logs
+        // Use teacher email as folder/key prefix
+        const teacherKey = `teacher_${teacherEmail.replace(/[^a-zA-Z0-9]/g, '_')}/passes`;
+        
+        // Get current logs for this teacher
         let logs = [];
         try {
-            const existingLogs = await store.get('passes', { type: 'json' });
+            const existingLogs = await store.get(teacherKey, { type: 'json' });
             if (existingLogs) {
                 logs = existingLogs;
             }
         } catch (e) {
-            console.log('No existing logs found');
+            console.log(`No existing logs found for teacher ${teacherEmail}`);
         }
-
-        // Parse query parameters for filtering (optional)
-        const queryParams = event.queryStringParameters || {};
-        const { date, limit } = queryParams;
 
         // Filter by date if requested
         if (date) {

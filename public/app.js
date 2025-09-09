@@ -1,12 +1,35 @@
 // Hall Pass Generator Application
 let passLog = [];
 let selectedLocation = '';
+let teacherEmail = '';
+let isAdmin = false;
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
+    // Check if user is logged in
+    const isLoggedIn = localStorage.getItem('isLoggedIn');
+    teacherEmail = localStorage.getItem('teacherEmail');
+    
+    if (!isLoggedIn || !teacherEmail) {
+        // Redirect to login page
+        window.location.href = 'login.html';
+        return;
+    }
+    
+    // Check if admin
+    isAdmin = teacherEmail === 'meyere@wyomingps.org';
+    
     initializeLocationButtons();
     setupEventListeners();
-    loadPassLog();
+    
+    if (isAdmin) {
+        setupAdminView();
+        loadAllTeachersLogs();
+    } else {
+        loadPassLog();
+    }
+    
+    addLogoutButton();
 });
 
 // Initialize location buttons from config
@@ -138,7 +161,8 @@ async function handleFormSubmit(e) {
         id: Date.now().toString(),
         name: name,
         location: finalLocation,
-        timestamp: new Date().toISOString()
+        timestamp: new Date().toISOString(),
+        teacherEmail: teacherEmail
     };
     
     // Add to local log
@@ -180,7 +204,7 @@ async function savePassToBackend(pass) {
 // Load pass log from backend
 async function loadPassLog() {
     try {
-        const response = await fetch('/api/get-logs');
+        const response = await fetch(`/api/get-logs?teacherEmail=${encodeURIComponent(teacherEmail)}`);
         if (response.ok) {
             const data = await response.json();
             passLog = data.logs || [];
@@ -188,8 +212,8 @@ async function loadPassLog() {
         }
     } catch (error) {
         console.error('Error loading pass log:', error);
-        // Use local storage as fallback
-        const stored = localStorage.getItem('passLog');
+        // Use local storage as fallback for this teacher
+        const stored = localStorage.getItem(`passLog_${teacherEmail}`);
         if (stored) {
             passLog = JSON.parse(stored);
             updatePassLog();
@@ -201,8 +225,10 @@ async function loadPassLog() {
 function updatePassLog() {
     const logContainer = document.getElementById('pass-log');
     
-    // Save to local storage as backup
-    localStorage.setItem('passLog', JSON.stringify(passLog));
+    // Save to local storage as backup for this teacher (if not admin)
+    if (!isAdmin) {
+        localStorage.setItem(`passLog_${teacherEmail}`, JSON.stringify(passLog));
+    }
     
     if (passLog.length === 0) {
         logContainer.innerHTML = `
@@ -218,11 +244,14 @@ function updatePassLog() {
     
     const logHTML = passLog.map(entry => {
         const date = new Date(entry.timestamp);
+        const teacherInfo = isAdmin && entry.teacherEmail ? 
+            `<div class="log-entry-teacher" style="color: #666; font-size: 0.85rem; font-style: italic;">Teacher: ${escapeHtml(entry.teacherEmail)}</div>` : '';
         return `
             <div class="log-entry">
                 <div class="log-entry-name">${escapeHtml(entry.name)}</div>
                 <div class="log-entry-location">to ${escapeHtml(entry.location)}</div>
                 <div class="log-entry-time">${formatTime(date)}</div>
+                ${teacherInfo}
             </div>
         `;
     }).join('');
@@ -260,10 +289,6 @@ function showPassModal(pass) {
             <div class="pass-footer-item">
                 <strong>TIME OUT</strong>
                 <span>${formatTime(date)}</span>
-            </div>
-            <div class="pass-footer-item">
-                <strong>TIME IN</strong>
-                <span class="time-blank">&nbsp;</span>
             </div>
         </div>
     `;
@@ -306,4 +331,104 @@ function escapeHtml(text) {
     const div = document.createElement('div');
     div.textContent = text;
     return div.innerHTML;
+}
+
+// Setup admin view
+function setupAdminView() {
+    // Update header to show admin status
+    const header = document.querySelector('header h1');
+    header.innerHTML = 'Hall Pass Generator <span style="color: #dc3545; font-size: 0.7em;">(Admin View)</span>';
+    
+    // Hide the form for admin
+    const formSection = document.querySelector('.form-section');
+    formSection.style.display = 'none';
+    
+    // Update log section title
+    const logTitle = document.querySelector('.log-section h2');
+    logTitle.textContent = 'All Teachers Pass Log';
+    
+    // Add filter controls for admin
+    const logSection = document.querySelector('.log-section');
+    const filterDiv = document.createElement('div');
+    filterDiv.style.cssText = 'margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;';
+    filterDiv.innerHTML = `
+        <label style="margin-right: 1rem; font-weight: 500;">Filter by Teacher:</label>
+        <select id="teacher-filter" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+            <option value="all">All Teachers</option>
+        </select>
+    `;
+    logSection.insertBefore(filterDiv, document.getElementById('pass-log'));
+}
+
+// Load all teachers' logs (admin only)
+async function loadAllTeachersLogs() {
+    try {
+        const response = await fetch(`/api/get-all-logs?adminEmail=${encodeURIComponent(teacherEmail)}`);
+        if (response.ok) {
+            const data = await response.json();
+            passLog = data.logs || [];
+            
+            // Populate teacher filter
+            if (data.teachers && data.teachers.length > 0) {
+                const filterSelect = document.getElementById('teacher-filter');
+                data.teachers.forEach(teacher => {
+                    const option = document.createElement('option');
+                    option.value = teacher;
+                    option.textContent = teacher;
+                    filterSelect.appendChild(option);
+                });
+                
+                // Add filter event listener
+                filterSelect.addEventListener('change', (e) => {
+                    filterLogsByTeacher(e.target.value, data.logs);
+                });
+            }
+            
+            updatePassLog();
+        } else {
+            console.error('Failed to load all logs - unauthorized or error');
+        }
+    } catch (error) {
+        console.error('Error loading all logs:', error);
+    }
+}
+
+// Filter logs by teacher
+function filterLogsByTeacher(teacherEmail, allLogs) {
+    if (teacherEmail === 'all') {
+        passLog = allLogs;
+    } else {
+        passLog = allLogs.filter(log => log.teacherEmail === teacherEmail);
+    }
+    updatePassLog();
+}
+
+// Add logout button to the page
+function addLogoutButton() {
+    const headerRight = document.querySelector('.header-right');
+    const roleLabel = isAdmin ? ' (Admin)' : '';
+    headerRight.innerHTML = `
+        <span style="color: #6d6d6d; font-size: 0.9rem; font-weight: 500;">${escapeHtml(teacherEmail)}${roleLabel}</span>
+        <button id="logout-btn" style="
+            background: #644186;
+            color: #ffffff;
+            border: 2px solid #644186;
+            padding: 0.5rem 1rem;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.3s;
+        " onmouseover="this.style.background='#4f3366'; this.style.borderColor='#4f3366'" onmouseout="this.style.background='#644186'; this.style.borderColor='#644186'">
+            Logout
+        </button>
+    `;
+    
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        // Clear login data
+        localStorage.removeItem('isLoggedIn');
+        localStorage.removeItem('teacherEmail');
+        // Redirect to login
+        window.location.href = 'login.html';
+    });
 }

@@ -1,3 +1,5 @@
+@import url('https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&display=swap');
+
 * {
     margin: 0;
     padding: 0;
@@ -6,29 +8,66 @@
 
 body {
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
-    background-color: #f1f5f9;
+    background-color: #644186;
     min-height: 100vh;
-    padding: 1rem;
+    padding: 0;
+    padding-top: 80px;
 }
 
 .container {
     max-width: 1280px;
     margin: 0 auto;
+    padding: 1rem;
 }
 
 header {
-    text-align: center;
-    margin-bottom: 2rem;
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    background: #ffffff;
+    border-bottom: 2px solid #644186;
+    padding: 1rem;
+    z-index: 1000;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+
+.header-content {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    max-width: 1280px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.header-left {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
+
+.school-logo {
+    height: 50px;
+    width: auto;
 }
 
 header h1 {
-    font-size: 2.5rem;
-    color: #1e293b;
-    margin-bottom: 0.5rem;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.5rem;
+    color: #644186;
+    margin: 0;
+    font-weight: 700;
+}
+
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
 }
 
 header p {
-    color: #64748b;
+    color: #6d6d6d;
 }
 
 main {
@@ -56,16 +95,17 @@ main {
 
 .form-group label {
     display: block;
-    font-size: 1.125rem;
-    font-weight: 500;
-    color: #334155;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    font-weight: 700;
+    color: #644186;
     margin-bottom: 0.5rem;
 }
 
 .form-group input {
     width: 100%;
     padding: 0.75rem 1rem;
-    border: 1px solid #cbd5e1;
+    border: 1px solid #6d6d6d;
     border-radius: 0.5rem;
     font-size: 1rem;
     transition: all 0.2s;
@@ -73,8 +113,8 @@ main {
 
 .form-group input:focus {
     outline: none;
-    border-color: #3b82f6;
-    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+    border-color: #644186;
+    box-shadow: 0 0 0 3px rgba(100, 65, 134, 0.1);
 }
 
 .location-buttons {
@@ -91,28 +131,30 @@ main {
     font-size: 0.875rem;
     cursor: pointer;
     transition: all 0.2s;
-    background-color: #e2e8f0;
-    color: #334155;
+    background-color: #f8f9fa;
+    color: #6d6d6d;
     display: flex;
     align-items: center;
     gap: 0.5rem;
+    border: 1px solid #6d6d6d;
 }
 
 .location-btn:hover {
-    background-color: #cbd5e1;
+    background-color: #f0f0f0;
     transform: scale(1.05);
 }
 
 .location-btn.selected {
-    background-color: #2563eb;
+    background-color: #644186;
     color: white;
+    border-color: #644186;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
 .submit-btn {
     width: 100%;
     padding: 0.75rem 1.5rem;
-    background-color: #10b981;
+    background-color: #644186;
     color: white;
     font-weight: bold;
     font-size: 1.125rem;
@@ -124,11 +166,11 @@ main {
 }
 
 .submit-btn:hover:not(:disabled) {
-    background-color: #059669;
+    background-color: #4f3366;
 }
 
 .submit-btn:disabled {
-    background-color: #94a3b8;
+    background-color: #6d6d6d;
     cursor: not-allowed;
     box-shadow: none;
 }
@@ -144,11 +186,13 @@ main {
 }
 
 .log-section h2 {
-    font-size: 1.5rem;
-    color: #1e293b;
+    font-family: 'Montserrat', sans-serif;
+    font-size: 1.25rem;
+    color: #644186;
+    font-weight: 700;
     margin-bottom: 1rem;
     padding-bottom: 0.5rem;
-    border-bottom: 2px solid #e2e8f0;
+    border-bottom: 2px solid #6d6d6d;
 }
 
 .pass-log {
@@ -162,7 +206,7 @@ main {
     align-items: center;
     justify-content: center;
     height: 200px;
-    color: #94a3b8;
+    color: #6d6d6d;
 }
 
 .empty-log svg {
@@ -170,27 +214,27 @@ main {
 }
 
 .log-entry {
-    background-color: #f8fafc;
+    background-color: #f8f9fa;
     padding: 0.75rem;
     margin-bottom: 0.75rem;
     border-radius: 0.5rem;
-    border: 1px solid #e2e8f0;
+    border: 1px solid #6d6d6d;
 }
 
 .log-entry-name {
     font-weight: 600;
-    color: #1e293b;
+    color: #644186;
 }
 
 .log-entry-location {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #6d6d6d;
     margin: 0.25rem 0;
 }
 
 .log-entry-time {
     font-size: 0.75rem;
-    color: #94a3b8;
+    color: #6d6d6d;
     text-align: right;
 }
 
@@ -232,8 +276,8 @@ main {
     width: 3.5in;
     height: 2in;
     margin: 0 auto 1.5rem;
-    border: 4px solid #1e293b;
-    background-color: #f8fafc;
+    border: 4px solid #644186;
+    background-color: #ffffff;
     padding: 1rem;
     display: flex;
     flex-direction: column;
@@ -242,20 +286,20 @@ main {
 
 .pass-header {
     text-align: center;
-    border-bottom: 2px solid #1e293b;
+    border-bottom: 2px solid #644186;
     padding-bottom: 0.5rem;
 }
 
 .pass-school-name {
     font-size: 1rem;
     font-weight: bold;
-    color: #0f172a;
+    color: #644186;
 }
 
 .pass-title {
     font-size: 1.25rem;
     font-weight: 900;
-    color: #0f172a;
+    color: #644186;
     letter-spacing: 0.05em;
 }
 
@@ -273,12 +317,12 @@ main {
 .pass-field strong {
     width: 4.5rem;
     font-weight: 600;
-    color: #334155;
+    color: #6d6d6d;
 }
 
 .pass-field span {
     flex: 1;
-    border-bottom: 1px dotted #94a3b8;
+    border-bottom: 1px dotted #6d6d6d;
     font-family: 'Courier New', monospace;
 }
 
@@ -287,7 +331,7 @@ main {
     justify-content: space-between;
     text-align: center;
     font-size: 0.625rem;
-    color: #64748b;
+    color: #6d6d6d;
 }
 
 .pass-footer-item strong {
@@ -298,7 +342,7 @@ main {
 .pass-footer-item .time-blank {
     display: inline-block;
     width: 5rem;
-    border-bottom: 1px dotted #94a3b8;
+    border-bottom: 1px dotted #6d6d6d;
 }
 
 .modal-footer {
@@ -307,13 +351,13 @@ main {
 
 .modal-footer p {
     font-size: 0.875rem;
-    color: #64748b;
+    color: #6d6d6d;
     margin-bottom: 1rem;
 }
 
 .close-btn {
     padding: 0.5rem 1.5rem;
-    background-color: #475569;
+    background-color: #644186;
     color: white;
     font-weight: bold;
     border: none;
@@ -323,7 +367,7 @@ main {
 }
 
 .close-btn:hover {
-    background-color: #334155;
+    background-color: #4f3366;
 }
 
 @media print {
