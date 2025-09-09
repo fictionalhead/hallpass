@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hall Pass Generator</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hall Pass Generator</h1>
+            <p>Create and print your hall pass instantly.</p>
+        </header>
+
+        <main>
+            <div class="form-section">
+                <form id="hallpass-form">
+                    <div class="form-group">
+                        <label for="name">Student Name</label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            placeholder="Enter your full name" 
+                            required
+                        >
+                    </div>
+
+                    <div class="form-group">
+                        <label>Location</label>
+                        <div id="location-buttons" class="location-buttons"></div>
+                    </div>
+
+                    <div id="other-location-group" class="form-group hidden">
+                        <label for="other-location">Please Specify Location</label>
+                        <input 
+                            type="text" 
+                            id="other-location" 
+                            name="other-location" 
+                            placeholder="e.g., Mr. Smith's Room"
+                        >
+                    </div>
+
+                    <div id="error-message" class="error-message hidden"></div>
+
+                    <button type="submit" class="submit-btn" disabled>
+                        Generate & Print Pass
+                    </button>
+                </form>
+            </div>
+
+            <div class="log-section">
+                <h2>Pass Log</h2>
+                <div id="pass-log" class="pass-log">
+                    <div class="empty-log">
+                        <svg xmlns="http://www.w3.org/2000/svg" width="48" height="48" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4" />
+                        </svg>
+                        <p>No passes generated yet.</p>
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Hall Pass Modal -->
+    <div id="pass-modal" class="modal hidden">
+        <div class="modal-content">
+            <div id="printable-pass" class="printable-pass"></div>
+            <div class="modal-footer">
+                <p>Your pass is ready. Please check the print dialog.</p>
+                <button id="close-modal" class="close-btn">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="config.js"></script>
+    <script src="app.js"></script>
+</body>
+</html>

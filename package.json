@@ -1,0 +1,16 @@
+{
+  "name": "hallpass-app",
+  "version": "1.0.0",
+  "description": "Simple hallpass generator with Netlify Functions",
+  "scripts": {
+    "dev": "netlify dev",
+    "build": "echo 'No build step required'"
+  },
+  "devDependencies": {
+    "netlify-cli": "^17.0.0"
+  },
+  "dependencies": {
+    "@netlify/functions": "^2.0.0",
+    "@netlify/blobs": "^7.0.0"
+  }
+}
