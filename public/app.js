@@ -3,6 +3,8 @@ let passLog = [];
 let selectedLocation = '';
 let teacherEmail = '';
 let isAdmin = false;
+let currentPass = null; // Store the current pass being created/viewed
+let isNewPass = false; // Track if this is a new pass or viewing an existing one
 
 // Initialize the application
 document.addEventListener('DOMContentLoaded', () => {
@@ -74,19 +76,66 @@ function setupEventListeners() {
     const nameInput = document.getElementById('name');
     const otherLocationInput = document.getElementById('other-location');
     const closeModalBtn = document.getElementById('close-modal');
+    const closeXBtn = document.getElementById('modal-close-x');
     const printPassBtn = document.getElementById('print-pass');
+    const editPassBtn = document.getElementById('edit-pass');
     
     form.addEventListener('submit', handleFormSubmit);
     nameInput.addEventListener('input', validateForm);
     otherLocationInput.addEventListener('input', validateForm);
     closeModalBtn.addEventListener('click', closeModal);
+    closeXBtn.addEventListener('click', closeModal);
     printPassBtn.addEventListener('click', printPass);
+    editPassBtn.addEventListener('click', editPass);
     
     // Close modal on escape key
     document.addEventListener('keydown', (e) => {
         if (e.key === 'Escape') {
             closeModal();
         }
+    });
+    
+    // Debug print events
+    window.addEventListener('beforeprint', (e) => {
+        console.log('=== BEFORE PRINT EVENT ===');
+        const passes = document.querySelectorAll('.printable-pass');
+        console.log('Passes found before print:', passes.length);
+        
+        // Completely remove log entries from DOM during print
+        document.querySelectorAll('.log-entry').forEach(entry => {
+            entry.style.display = 'none !important';
+            entry.style.visibility = 'hidden !important';
+            entry.style.position = 'absolute !important';
+            entry.style.left = '-9999px !important';
+        });
+        
+        // Hide all other content
+        document.querySelector('.container').style.display = 'none';
+        document.querySelector('header').style.display = 'none';
+        document.querySelector('main').style.display = 'none';
+        
+        // Ensure only one pass and force single page
+        passes.forEach((pass, index) => {
+            if (index > 0) {
+                console.log('Removing extra pass before print:', index);
+                pass.remove();
+            }
+        });
+    });
+    
+    window.addEventListener('afterprint', (e) => {
+        console.log('=== AFTER PRINT EVENT ===');
+        // Restore everything
+        document.querySelectorAll('.log-entry').forEach(entry => {
+            entry.style.display = '';
+            entry.style.visibility = '';
+            entry.style.position = '';
+            entry.style.left = '';
+        });
+        
+        document.querySelector('.container').style.display = '';
+        document.querySelector('header').style.display = '';
+        document.querySelector('main').style.display = '';
     });
 }
 
@@ -167,15 +216,12 @@ async function handleFormSubmit(e) {
         teacherEmail: teacherEmail
     };
     
-    // Add to local log
-    passLog.unshift(pass);
-    updatePassLog();
+    // Store the pass temporarily and mark as new
+    currentPass = pass;
+    isNewPass = true;
     
-    // Save to backend
-    await savePassToBackend(pass);
-    
-    // Show the pass modal
-    showPassModal(pass);
+    // Show the pass modal (but don't save to DB yet)
+    showPassModal(pass, true);
 }
 
 // Save pass to backend
@@ -250,12 +296,17 @@ function updatePassLog() {
         const date = new Date(entry.timestamp);
         const teacherInfo = isAdmin && entry.teacherEmail ? 
             `<div class="log-entry-teacher" style="color: #666; font-size: 0.85rem; font-style: italic;">Teacher: ${escapeHtml(entry.teacherEmail)}</div>` : '';
+        const deleteBtn = isAdmin ? 
+            `<button class="delete-pass-btn" onclick="event.stopPropagation(); deletePass('${entry.id}')" title="Delete this pass">×</button>` : '';
         return `
             <div class="log-entry" data-pass-index="${index}" onclick="viewPassByIndex(${index})">
-                <div class="log-entry-name">${escapeHtml(entry.name)}</div>
-                <div class="log-entry-location">to ${escapeHtml(entry.location)}</div>
-                <div class="log-entry-time">${formatTime(date)}</div>
-                ${teacherInfo}
+                ${deleteBtn}
+                <div class="log-entry-content">
+                    <div class="log-entry-name">${escapeHtml(entry.name)}</div>
+                    <div class="log-entry-location">to ${escapeHtml(entry.location)}</div>
+                    <div class="log-entry-time">${formatTime(date)}</div>
+                    ${teacherInfo}
+                </div>
             </div>
         `;
     }).join('');
@@ -266,19 +317,25 @@ function updatePassLog() {
 // View an existing pass from the log by index
 function viewPassByIndex(index) {
     if (passLog[index]) {
-        showPassModal(passLog[index]);
+        currentPass = passLog[index];
+        isNewPass = false;
+        showPassModal(passLog[index], false);
     }
 }
 
 // Show pass modal
-function showPassModal(pass) {
+function showPassModal(pass, isNew = false) {
     const modal = document.getElementById('pass-modal');
-    const printablePass = document.getElementById('printable-pass');
+    const container = document.getElementById('printable-pass-container');
     
     const date = new Date(pass.timestamp);
     
-    // Clear any existing content first to prevent stacking
-    printablePass.innerHTML = '';
+    // Clear the entire container and recreate the pass element to ensure clean slate
+    container.innerHTML = '';
+    const printablePass = document.createElement('div');
+    printablePass.id = 'printable-pass';
+    printablePass.className = 'printable-pass';
+    container.appendChild(printablePass);
     
     printablePass.innerHTML = `
         <div class="pass-header">
@@ -297,11 +354,11 @@ function showPassModal(pass) {
         </div>
         <div class="pass-footer">
             <div class="pass-footer-item">
-                <strong>DATE</strong>
+                <strong>DATE:</strong>
                 <span>${formatDate(date)}</span>
             </div>
             <div class="pass-footer-item">
-                <strong>TIME OUT</strong>
+                <strong>TIME OUT:</strong>
                 <span>${formatTime(date)}</span>
             </div>
         </div>
@@ -314,12 +371,109 @@ function showPassModal(pass) {
     printablePass.style.borderColor = HALLPASS_CONFIG.passStyle.borderColor;
     printablePass.style.backgroundColor = HALLPASS_CONFIG.passStyle.backgroundColor;
     
+    // Show/hide edit button based on whether this is a new pass
+    const editBtn = document.getElementById('edit-pass');
+    const modalMessage = document.getElementById('modal-message');
+    if (isNew) {
+        editBtn.classList.remove('hidden');
+        modalMessage.textContent = 'Review your pass before printing.';
+    } else {
+        editBtn.classList.add('hidden');
+        modalMessage.textContent = 'Viewing pass.';
+    }
+    
     modal.classList.remove('hidden');
 }
 
 // Print pass
-function printPass() {
+async function printPass() {
+    console.log('=== PRINT DEBUGGING ===');
+    
+    // If this is a new pass, save it to the database first
+    if (isNewPass && currentPass) {
+        // Add to local log
+        passLog.unshift(currentPass);
+        updatePassLog();
+        
+        // Save to backend
+        await savePassToBackend(currentPass);
+        
+        // Mark as no longer new
+        isNewPass = false;
+    }
+    
+    // Check all printable passes in the DOM
+    const allPasses = document.querySelectorAll('.printable-pass');
+    console.log('Number of .printable-pass elements found:', allPasses.length);
+    
+    // Check for log entries that might be printing
+    const logEntries = document.querySelectorAll('.log-entry');
+    console.log('Number of log entries in DOM:', logEntries.length);
+    console.log('Current passLog array length:', passLog.length);
+    
+    // Check pass internal structure
+    const passFooterItems = document.querySelectorAll('.pass-footer-item');
+    console.log('Number of footer items:', passFooterItems.length);
+    
+    const passFields = document.querySelectorAll('.pass-field');
+    console.log('Number of pass fields:', passFields.length);
+    
+    // Check the container
+    const container = document.getElementById('printable-pass-container');
+    console.log('Container children:', container.children.length);
+    console.log('Container HTML length:', container.innerHTML.length);
+    
+    // Check modal visibility
+    const modal = document.getElementById('pass-modal');
+    console.log('Modal classes:', modal.className);
+    console.log('Modal is hidden:', modal.classList.contains('hidden'));
+    
+    // Check for any other elements that might be printing
+    const allVisibleElements = document.querySelectorAll('*:not(.hidden)');
+    let visibleDuringPrint = 0;
+    allVisibleElements.forEach(el => {
+        const styles = window.getComputedStyle(el);
+        if (styles.visibility !== 'hidden') {
+            visibleDuringPrint++;
+        }
+    });
+    console.log('Total visible elements:', visibleDuringPrint);
+    
+    // Log the actual pass content
+    const passElement = document.getElementById('printable-pass');
+    if (passElement) {
+        console.log('Pass element exists');
+        console.log('Pass element height:', passElement.offsetHeight);
+        console.log('Pass element width:', passElement.offsetWidth);
+        const computedStyle = window.getComputedStyle(passElement);
+        console.log('Pass computed height:', computedStyle.height);
+        console.log('Pass computed width:', computedStyle.width);
+    }
+    
+    // Ensure only the current pass is visible for printing
+    allPasses.forEach((pass, index) => {
+        if (index > 0) {
+            console.log('Removing duplicate pass at index:', index);
+            pass.remove();
+        }
+    });
+    
+    console.log('=== END PRINT DEBUGGING ===');
+    
     window.print();
+}
+
+// Edit pass - close modal and return to form
+function editPass() {
+    const modal = document.getElementById('pass-modal');
+    modal.classList.add('hidden');
+    
+    // Clear the entire container
+    const container = document.getElementById('printable-pass-container');
+    container.innerHTML = '';
+    
+    // Don't reset the form - keep the values for editing
+    // The user can modify and resubmit
 }
 
 // Close modal
@@ -327,9 +481,13 @@ function closeModal() {
     const modal = document.getElementById('pass-modal');
     modal.classList.add('hidden');
     
-    // Clear the printable pass content to prevent stacking
-    const printablePass = document.getElementById('printable-pass');
-    printablePass.innerHTML = '';
+    // Clear the entire container to prevent stacking
+    const container = document.getElementById('printable-pass-container');
+    container.innerHTML = '';
+    
+    // Reset current pass tracking
+    currentPass = null;
+    isNewPass = false;
     
     // Reset form
     document.getElementById('hallpass-form').reset();
@@ -375,10 +533,39 @@ function setupAdminView() {
     const filterDiv = document.createElement('div');
     filterDiv.style.cssText = 'margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;';
     filterDiv.innerHTML = `
-        <label style="margin-right: 1rem; font-weight: 500;">Filter by Teacher:</label>
-        <select id="teacher-filter" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
-            <option value="all">All Teachers</option>
-        </select>
+        <div style="display: flex; justify-content: space-between; align-items: center;">
+            <div>
+                <label style="margin-right: 1rem; font-weight: 500;">Filter by Teacher:</label>
+                <select id="teacher-filter" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                    <option value="all">All Teachers</option>
+                </select>
+            </div>
+            <div style="display: flex; gap: 0.5rem;">
+                <button id="delete-teacher-passes" class="admin-action-btn" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: 500;
+                    display: none;
+                " onclick="deleteTeacherPasses()">
+                    Delete Teacher's Passes
+                </button>
+                <button id="delete-all-passes" class="admin-action-btn" style="
+                    background: #dc3545;
+                    color: white;
+                    border: none;
+                    padding: 0.5rem 1rem;
+                    border-radius: 4px;
+                    cursor: pointer;
+                    font-weight: 500;
+                " onclick="deleteAllPasses()">
+                    Delete All Passes
+                </button>
+            </div>
+        </div>
     `;
     logSection.insertBefore(filterDiv, document.getElementById('pass-log'));
 }
@@ -406,6 +593,13 @@ async function loadAllTeachersLogs() {
                 // Add filter event listener
                 filterSelect.addEventListener('change', (e) => {
                     filterLogsByTeacher(e.target.value, data.logs);
+                    // Show/hide delete teacher passes button
+                    const deleteTeacherBtn = document.getElementById('delete-teacher-passes');
+                    if (e.target.value !== 'all') {
+                        deleteTeacherBtn.style.display = 'block';
+                    } else {
+                        deleteTeacherBtn.style.display = 'none';
+                    }
                 });
             }
             
@@ -427,6 +621,126 @@ function filterLogsByTeacher(teacherEmail, allLogs) {
         passLog = allLogs.filter(log => log.teacherEmail === teacherEmail);
     }
     updatePassLog();
+}
+
+// Delete single pass
+async function deletePass(passId) {
+    if (!confirm('Are you sure you want to delete this pass?')) {
+        return;
+    }
+    
+    try {
+        const response = await fetch(`/api/delete-pass/${passId}`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ adminEmail: teacherEmail })
+        });
+        
+        if (response.ok) {
+            // Remove from local array
+            passLog = passLog.filter(p => p.id !== passId);
+            updatePassLog();
+            console.log('Pass deleted successfully');
+        } else {
+            console.error('Failed to delete pass');
+            alert('Failed to delete pass. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error deleting pass:', error);
+        alert('Error deleting pass. Please try again.');
+    }
+}
+
+// Delete all passes for a specific teacher
+async function deleteTeacherPasses() {
+    const filterSelect = document.getElementById('teacher-filter');
+    const selectedTeacher = filterSelect.value;
+    
+    if (selectedTeacher === 'all') {
+        alert('Please select a specific teacher first.');
+        return;
+    }
+    
+    const passCount = passLog.filter(p => p.teacherEmail === selectedTeacher).length;
+    
+    if (!confirm(`Are you sure you want to delete ALL ${passCount} passes for ${selectedTeacher}?\n\nThis action cannot be undone!`)) {
+        return;
+    }
+    
+    // Second confirmation for safety
+    if (!confirm(`FINAL CONFIRMATION: Delete all passes for ${selectedTeacher}?`)) {
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/delete-teacher-passes', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ 
+                adminEmail: teacherEmail,
+                targetTeacher: selectedTeacher 
+            })
+        });
+        
+        if (response.ok) {
+            // Reload all logs
+            await loadAllTeachersLogs();
+            alert(`All passes for ${selectedTeacher} have been deleted.`);
+        } else {
+            console.error('Failed to delete teacher passes');
+            alert('Failed to delete passes. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error deleting teacher passes:', error);
+        alert('Error deleting passes. Please try again.');
+    }
+}
+
+// Delete all passes (admin only)
+async function deleteAllPasses() {
+    const totalCount = passLog.length;
+    
+    if (!confirm(`Are you sure you want to delete ALL ${totalCount} passes in the system?\n\nThis will remove all passes for all teachers!`)) {
+        return;
+    }
+    
+    // Second confirmation
+    if (!confirm(`FINAL CONFIRMATION: This will permanently delete ALL passes.\n\nType "DELETE ALL" to confirm.`)) {
+        return;
+    }
+    
+    const userInput = prompt('Type "DELETE ALL" to confirm deletion of all passes:');
+    
+    if (userInput !== 'DELETE ALL') {
+        alert('Deletion cancelled.');
+        return;
+    }
+    
+    try {
+        const response = await fetch('/api/delete-all-passes', {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({ adminEmail: teacherEmail })
+        });
+        
+        if (response.ok) {
+            passLog = [];
+            updatePassLog();
+            alert('All passes have been deleted.');
+        } else {
+            console.error('Failed to delete all passes');
+            alert('Failed to delete passes. Please try again.');
+        }
+    } catch (error) {
+        console.error('Error deleting all passes:', error);
+        alert('Error deleting passes. Please try again.');
+    }
 }
 
 // Add logout button to the page

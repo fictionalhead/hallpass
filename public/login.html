@@ -163,8 +163,17 @@
             const password = document.getElementById('password').value;
             const errorDiv = document.getElementById('login-error');
             
-            // Check password
-            if (password === 'hallpass123') {
+            // Check password - admin has different password
+            let validPassword = false;
+            if (email === 'meyere@wyomingps.org') {
+                // Admin password
+                validPassword = (password === '9parzna9');
+            } else {
+                // Regular teacher password
+                validPassword = (password === 'hallpass123');
+            }
+            
+            if (validPassword) {
                 // Store teacher email in localStorage
                 localStorage.setItem('teacherEmail', email);
                 localStorage.setItem('isLoggedIn', 'true');

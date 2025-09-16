@@ -18,16 +18,16 @@ const HALLPASS_CONFIG = {
         'Other'
     ],
     
-    // Pass dimensions (in inches)
+    // Pass dimensions (in inches) - Set for Brother QL-820NWB label printer
     passDimensions: {
-        width: "3.5in",
-        height: "2in"
+        width: "2.4in",
+        height: "3.9in"
     },
     
-    // Pass styling
+    // Pass styling - Optimized for black and white printing
     passStyle: {
         borderWidth: "4px",
-        borderColor: "#644186",
+        borderColor: "#000000",
         backgroundColor: "#ffffff",
         fontFamily: "'Courier New', monospace"
     },

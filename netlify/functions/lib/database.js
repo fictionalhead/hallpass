@@ -78,6 +78,63 @@ const database = {
         return { passes, teachers };
     },
 
+    // Delete a single pass
+    async deletePass(passId, adminEmail) {
+        // Verify admin
+        if (adminEmail !== 'meyere@wyomingps.org') {
+            throw new Error('Unauthorized: Only admin can delete passes');
+        }
+        
+        const { data, error } = await supabase
+            .from('hall_passes')
+            .delete()
+            .eq('id', passId);
+            
+        if (error) {
+            throw new Error(`Failed to delete pass: ${error.message}`);
+        }
+        
+        return { success: true, deletedId: passId };
+    },
+
+    // Delete all passes for a specific teacher
+    async deleteTeacherPasses(targetTeacher, adminEmail) {
+        // Verify admin
+        if (adminEmail !== 'meyere@wyomingps.org') {
+            throw new Error('Unauthorized: Only admin can delete passes');
+        }
+        
+        const { data, error } = await supabase
+            .from('hall_passes')
+            .delete()
+            .eq('teacher_email', targetTeacher);
+            
+        if (error) {
+            throw new Error(`Failed to delete teacher passes: ${error.message}`);
+        }
+        
+        return { success: true, deletedTeacher: targetTeacher };
+    },
+
+    // Delete all passes in the system
+    async deleteAllPasses(adminEmail) {
+        // Verify admin
+        if (adminEmail !== 'meyere@wyomingps.org') {
+            throw new Error('Unauthorized: Only admin can delete all passes');
+        }
+        
+        const { data, error } = await supabase
+            .from('hall_passes')
+            .delete()
+            .neq('id', ''); // Delete all rows (id is never empty)
+            
+        if (error) {
+            throw new Error(`Failed to delete all passes: ${error.message}`);
+        }
+        
+        return { success: true, message: 'All passes deleted' };
+    },
+
     // Create the table if it doesn't exist (for initial setup)
     async createTable() {
         const { error } = await supabase.rpc('create_hall_passes_table');

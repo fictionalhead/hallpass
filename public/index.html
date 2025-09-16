@@ -74,10 +74,14 @@
     <!-- Hall Pass Modal -->
     <div id="pass-modal" class="modal hidden">
         <div class="modal-content">
-            <div id="printable-pass" class="printable-pass"></div>
+            <button id="modal-close-x" class="modal-close-x" aria-label="Close">×</button>
+            <div id="printable-pass-container">
+                <div id="printable-pass" class="printable-pass"></div>
+            </div>
             <div class="modal-footer">
-                <p>Your pass is ready.</p>
+                <p id="modal-message">Your pass is ready.</p>
                 <div class="modal-buttons">
+                    <button id="edit-pass" class="edit-btn hidden">Edit</button>
                     <button id="print-pass" class="print-btn">Print Pass</button>
                     <button id="close-modal" class="close-btn">Close</button>
                 </div>
