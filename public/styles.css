@@ -312,11 +312,11 @@ main {
 
 .printable-pass {
     width: 2.4in;
-    height: 3.9in;
+    height: 3.5in;
     margin: 0 auto 1.5rem;
-    border: 4px solid #000000;
+    border: 2px solid #000000;
     background-color: #ffffff;
-    padding: 0.75rem;
+    padding: 0.2in;
     display: flex;
     flex-direction: column;
     justify-content: space-between;
@@ -492,7 +492,9 @@ main {
 
 @media print {
     @page {
-        size: 2.4in 3.9in;
+        /* Brother QL-820NWB with DK-2205 (62mm/2.4in continuous paper) */
+        /* DK-2205 is continuous white paper tape */
+        size: 2.4in 3.5in;
         margin: 0;
     }
     
@@ -528,12 +530,12 @@ main {
         left: 0 !important;
         top: 0 !important;
         width: 2.4in !important;
-        height: 3.9in !important;
+        height: 3.5in !important;
         margin: 0 !important;
-        padding: 0.75rem !important;
+        padding: 0.2in !important;
         box-sizing: border-box !important;
         background: white !important;
-        border: 4px solid black !important;
+        border: 2px solid black !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: space-between !important;

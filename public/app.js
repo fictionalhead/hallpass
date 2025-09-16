@@ -388,6 +388,7 @@ function showPassModal(pass, isNew = false) {
 // Print pass
 async function printPass() {
     console.log('=== PRINT DEBUGGING ===');
+    console.log('Printing to Brother QL-820NWB with 62mm continuous roll');
     
     // If this is a new pass, save it to the database first
     if (isNewPass && currentPass) {

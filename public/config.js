@@ -18,10 +18,10 @@ const HALLPASS_CONFIG = {
         'Other'
     ],
     
-    // Pass dimensions (in inches) - Set for Brother QL-820NWB label printer
+    // Pass dimensions - Set for Brother QL-820NWB with DK-2205 roll
     passDimensions: {
         width: "2.4in",
-        height: "3.9in"
+        height: "3.5in"
     },
     
     // Pass styling - Optimized for black and white printing
