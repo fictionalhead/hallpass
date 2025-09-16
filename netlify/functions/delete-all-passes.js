@@ -1,5 +1,5 @@
-// Netlify Function to delete a single hall pass
-// Admin only functionality
+// Netlify Function to delete all passes in the system
+// Admin only functionality - requires extreme caution
 
 const database = require('./lib/database');
 
@@ -13,19 +13,7 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // Get pass ID from query params or body
-        const params = event.queryStringParameters || {};
-        const body = JSON.parse(event.body || '{}');
-        const passId = params.id || body.passId;
-        
-        if (!passId) {
-            return {
-                statusCode: 400,
-                body: JSON.stringify({ error: 'Pass ID is required' })
-            };
-        }
-
-        const { adminEmail } = body;
+        const { adminEmail } = JSON.parse(event.body || '{}');
         
         if (!adminEmail) {
             return {
@@ -34,9 +22,9 @@ exports.handler = async (event, context) => {
             };
         }
 
-        // Delete the pass from database
-        console.log(`Admin ${adminEmail} deleting pass ${passId}`);
-        const result = await database.deletePass(passId, adminEmail);
+        // Delete all passes from database
+        console.log(`Admin ${adminEmail} deleting ALL passes - DANGER ZONE`);
+        const result = await database.deleteAllPasses(adminEmail);
 
         return {
             statusCode: 200,
@@ -46,7 +34,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify(result)
         };
     } catch (error) {
-        console.error('Error deleting pass:', error);
+        console.error('Error deleting all passes:', error);
         
         if (error.message.includes('Unauthorized')) {
             return {
@@ -61,7 +49,7 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 500,
             body: JSON.stringify({ 
-                error: 'Failed to delete pass',
+                error: 'Failed to delete all passes',
                 details: error.message 
             })
         };

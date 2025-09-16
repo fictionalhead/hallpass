@@ -1,4 +1,4 @@
-// Netlify Function to delete a single hall pass
+// Netlify Function to delete all passes for a specific teacher
 // Admin only functionality
 
 const database = require('./lib/database');
@@ -13,30 +13,18 @@ exports.handler = async (event, context) => {
     }
 
     try {
-        // Get pass ID from query params or body
-        const params = event.queryStringParameters || {};
-        const body = JSON.parse(event.body || '{}');
-        const passId = params.id || body.passId;
+        const { adminEmail, targetTeacher } = JSON.parse(event.body || '{}');
         
-        if (!passId) {
+        if (!adminEmail || !targetTeacher) {
             return {
                 statusCode: 400,
-                body: JSON.stringify({ error: 'Pass ID is required' })
+                body: JSON.stringify({ error: 'Admin email and target teacher are required' })
             };
         }
 
-        const { adminEmail } = body;
-        
-        if (!adminEmail) {
-            return {
-                statusCode: 401,
-                body: JSON.stringify({ error: 'Admin email is required' })
-            };
-        }
-
-        // Delete the pass from database
-        console.log(`Admin ${adminEmail} deleting pass ${passId}`);
-        const result = await database.deletePass(passId, adminEmail);
+        // Delete all passes for the teacher
+        console.log(`Admin ${adminEmail} deleting all passes for teacher ${targetTeacher}`);
+        const result = await database.deleteTeacherPasses(targetTeacher, adminEmail);
 
         return {
             statusCode: 200,
@@ -46,7 +34,7 @@ exports.handler = async (event, context) => {
             body: JSON.stringify(result)
         };
     } catch (error) {
-        console.error('Error deleting pass:', error);
+        console.error('Error deleting teacher passes:', error);
         
         if (error.message.includes('Unauthorized')) {
             return {
@@ -61,7 +49,7 @@ exports.handler = async (event, context) => {
         return {
             statusCode: 500,
             body: JSON.stringify({ 
-                error: 'Failed to delete pass',
+                error: 'Failed to delete teacher passes',
                 details: error.message 
             })
         };

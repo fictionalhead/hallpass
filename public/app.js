@@ -570,6 +570,9 @@ function setupAdminView() {
     logSection.insertBefore(filterDiv, document.getElementById('pass-log'));
 }
 
+// Store all logs globally for filtering
+let allTeacherLogs = [];
+
 // Load all teachers' logs (admin only)
 async function loadAllTeachersLogs() {
     try {
@@ -579,10 +582,18 @@ async function loadAllTeachersLogs() {
             const data = await response.json();
             console.log('Admin loaded data from database:', data);
             passLog = data.logs || [];
+            allTeacherLogs = data.logs || []; // Store for filtering
             
-            // Populate teacher filter
+            // Clear and repopulate teacher filter
             if (data.teachers && data.teachers.length > 0) {
                 const filterSelect = document.getElementById('teacher-filter');
+                
+                // Clear existing options except "All Teachers"
+                while (filterSelect.options.length > 1) {
+                    filterSelect.remove(1);
+                }
+                
+                // Add teacher options
                 data.teachers.forEach(teacher => {
                     const option = document.createElement('option');
                     option.value = teacher;
@@ -590,9 +601,13 @@ async function loadAllTeachersLogs() {
                     filterSelect.appendChild(option);
                 });
                 
-                // Add filter event listener
-                filterSelect.addEventListener('change', (e) => {
-                    filterLogsByTeacher(e.target.value, data.logs);
+                // Remove old event listeners by cloning and replacing
+                const newFilterSelect = filterSelect.cloneNode(true);
+                filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
+                
+                // Add fresh filter event listener
+                newFilterSelect.addEventListener('change', (e) => {
+                    filterLogsByTeacher(e.target.value, allTeacherLogs);
                     // Show/hide delete teacher passes button
                     const deleteTeacherBtn = document.getElementById('delete-teacher-passes');
                     if (e.target.value !== 'all') {
@@ -630,12 +645,12 @@ async function deletePass(passId) {
     }
     
     try {
-        const response = await fetch(`/api/delete-pass/${passId}`, {
+        const response = await fetch(`/api/delete-pass?id=${passId}`, {
             method: 'DELETE',
             headers: {
                 'Content-Type': 'application/json'
             },
-            body: JSON.stringify({ adminEmail: teacherEmail })
+            body: JSON.stringify({ adminEmail: teacherEmail, passId: passId })
         });
         
         if (response.ok) {
@@ -687,11 +702,24 @@ async function deleteTeacherPasses() {
         });
         
         if (response.ok) {
+            const result = await response.json();
+            console.log('Delete result:', result);
+            
+            // Reset filter to "All Teachers" before reloading
+            const filterSelect = document.getElementById('teacher-filter');
+            filterSelect.value = 'all';
+            
+            // Hide the delete teacher button
+            const deleteTeacherBtn = document.getElementById('delete-teacher-passes');
+            deleteTeacherBtn.style.display = 'none';
+            
             // Reload all logs
             await loadAllTeachersLogs();
+            
             alert(`All passes for ${selectedTeacher} have been deleted.`);
         } else {
-            console.error('Failed to delete teacher passes');
+            const errorText = await response.text();
+            console.error('Failed to delete teacher passes:', errorText);
             alert('Failed to delete passes. Please try again.');
         }
     } catch (error) {
