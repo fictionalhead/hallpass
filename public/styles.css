@@ -219,6 +219,14 @@ main {
     margin-bottom: 0.75rem;
     border-radius: 0.5rem;
     border: 1px solid #6d6d6d;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.log-entry:hover {
+    background-color: #e9ecef;
+    transform: translateY(-2px);
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
 }
 
 .log-entry-name {
@@ -355,15 +363,34 @@ main {
     margin-bottom: 1rem;
 }
 
+.modal-buttons {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+.print-btn,
 .close-btn {
     padding: 0.5rem 1.5rem;
-    background-color: #644186;
-    color: white;
     font-weight: bold;
     border: none;
     border-radius: 0.5rem;
     cursor: pointer;
     transition: background-color 0.2s;
+}
+
+.print-btn {
+    background-color: #28a745;
+    color: white;
+}
+
+.print-btn:hover {
+    background-color: #218838;
+}
+
+.close-btn {
+    background-color: #644186;
+    color: white;
 }
 
 .close-btn:hover {

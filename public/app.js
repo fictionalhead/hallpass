@@ -74,11 +74,13 @@ function setupEventListeners() {
     const nameInput = document.getElementById('name');
     const otherLocationInput = document.getElementById('other-location');
     const closeModalBtn = document.getElementById('close-modal');
+    const printPassBtn = document.getElementById('print-pass');
     
     form.addEventListener('submit', handleFormSubmit);
     nameInput.addEventListener('input', validateForm);
     otherLocationInput.addEventListener('input', validateForm);
     closeModalBtn.addEventListener('click', closeModal);
+    printPassBtn.addEventListener('click', printPass);
     
     // Close modal on escape key
     document.addEventListener('keydown', (e) => {
@@ -174,11 +176,6 @@ async function handleFormSubmit(e) {
     
     // Show the pass modal
     showPassModal(pass);
-    
-    // Print automatically after a short delay
-    setTimeout(() => {
-        window.print();
-    }, 100);
 }
 
 // Save pass to backend
@@ -249,12 +246,12 @@ function updatePassLog() {
         return;
     }
     
-    const logHTML = passLog.map(entry => {
+    const logHTML = passLog.map((entry, index) => {
         const date = new Date(entry.timestamp);
         const teacherInfo = isAdmin && entry.teacherEmail ? 
             `<div class="log-entry-teacher" style="color: #666; font-size: 0.85rem; font-style: italic;">Teacher: ${escapeHtml(entry.teacherEmail)}</div>` : '';
         return `
-            <div class="log-entry">
+            <div class="log-entry" data-pass-index="${index}" onclick="viewPassByIndex(${index})">
                 <div class="log-entry-name">${escapeHtml(entry.name)}</div>
                 <div class="log-entry-location">to ${escapeHtml(entry.location)}</div>
                 <div class="log-entry-time">${formatTime(date)}</div>
@@ -266,12 +263,22 @@ function updatePassLog() {
     logContainer.innerHTML = logHTML;
 }
 
+// View an existing pass from the log by index
+function viewPassByIndex(index) {
+    if (passLog[index]) {
+        showPassModal(passLog[index]);
+    }
+}
+
 // Show pass modal
 function showPassModal(pass) {
     const modal = document.getElementById('pass-modal');
     const printablePass = document.getElementById('printable-pass');
     
     const date = new Date(pass.timestamp);
+    
+    // Clear any existing content first to prevent stacking
+    printablePass.innerHTML = '';
     
     printablePass.innerHTML = `
         <div class="pass-header">
@@ -310,10 +317,19 @@ function showPassModal(pass) {
     modal.classList.remove('hidden');
 }
 
+// Print pass
+function printPass() {
+    window.print();
+}
+
 // Close modal
 function closeModal() {
     const modal = document.getElementById('pass-modal');
     modal.classList.add('hidden');
+    
+    // Clear the printable pass content to prevent stacking
+    const printablePass = document.getElementById('printable-pass');
+    printablePass.innerHTML = '';
     
     // Reset form
     document.getElementById('hallpass-form').reset();
