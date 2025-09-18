@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Brother Label Print</title>
+    <style>
+        /* Screen styles */
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+        }
+
+        #test-pass {
+            width: 62mm;
+            height: 100mm;
+            border: 2px solid black;
+            padding: 4mm;
+            background: white;
+            margin: 20px auto;
+            box-sizing: border-box;
+        }
+
+        /* Print styles */
+        @media print {
+            @page {
+                size: 62mm 100mm;
+                margin: 0;
+            }
+
+            body {
+                margin: 0;
+                padding: 0;
+            }
+
+            #test-pass {
+                position: absolute;
+                top: 0;
+                left: 0;
+                width: 62mm;
+                height: 100mm;
+                border: 2px solid black;
+                padding: 4mm;
+                margin: 0;
+                page-break-inside: avoid;
+            }
+
+            button {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>Test Brother Label Print</h1>
+    <div id="test-pass">
+        <h2>HALL PASS</h2>
+        <p><strong>Name:</strong> Test Student</p>
+        <p><strong>Location:</strong> Bathroom</p>
+        <p><strong>Time:</strong> 10:30 AM</p>
+        <p><strong>Date:</strong> 09/18/2025</p>
+    </div>
+    <button onclick="window.print()">Test Print</button>
+
+    <script>
+        window.addEventListener('beforeprint', () => {
+            console.log('Before print event fired');
+            const pass = document.getElementById('test-pass');
+            console.log('Pass content:', pass.innerHTML);
+            console.log('Pass computed styles:', window.getComputedStyle(pass));
+        });
+    </script>
+</body>
+</html>

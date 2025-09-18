@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Print Debug Test</title>
+    <style>
+        @media print {
+            @page {
+                size: 62mm 100mm;
+                margin: 0;
+            }
+
+            body * {
+                visibility: hidden;
+            }
+
+            #test-content,
+            #test-content * {
+                visibility: visible;
+            }
+
+            #test-content {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 62mm;
+                height: 100mm;
+                border: 2px solid black;
+                padding: 4mm;
+                box-sizing: border-box;
+            }
+        }
+
+        #test-content {
+            width: 62mm;
+            height: 100mm;
+            border: 2px solid black;
+            padding: 4mm;
+            box-sizing: border-box;
+            margin: 20px;
+        }
+    </style>
+</head>
+<body>
+    <h1>This should be hidden when printing</h1>
+    <div id="test-content">
+        <h2>HALL PASS</h2>
+        <p>Name: Test Student</p>
+        <p>Location: Bathroom</p>
+        <p>Time: 10:30 AM</p>
+        <p>This content should be visible when printing</p>
+    </div>
+    <button onclick="window.print()">Test Print</button>
+
+    <script>
+        window.addEventListener('beforeprint', () => {
+            const content = document.getElementById('test-content');
+            console.log('Test print - content exists:', !!content);
+            console.log('Test print - visibility:', window.getComputedStyle(content).visibility);
+        });
+    </script>
+</body>
+</html>

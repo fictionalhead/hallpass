@@ -385,10 +385,14 @@ function showPassModal(pass, isNew = false) {
     modal.classList.remove('hidden');
 }
 
-// Print pass
+// Print pass with Brother label printer configuration
 async function printPass() {
-    console.log('=== PRINT DEBUGGING ===');
-    console.log('Printing to Brother QL-820NWB with 62mm continuous roll');
+    console.log('=== BROTHER LABEL PRINTING ===');
+
+    // Get selected label type
+    const labelType = document.getElementById('label-type')?.value || 'DK-2205';
+    console.log('Selected label type:', labelType);
+    console.log('Printing to Brother QL-820NWB');
     
     // If this is a new pass, save it to the database first
     if (isNewPass && currentPass) {
@@ -459,9 +463,15 @@ async function printPass() {
         }
     });
     
-    console.log('=== END PRINT DEBUGGING ===');
-    
-    window.print();
+    console.log('=== END BROTHER LABEL PRINTING ===');
+
+    // Use Brother label printer module if available
+    if (window.BrotherLabelPrinter) {
+        window.BrotherLabelPrinter.printLabel(labelType);
+    } else {
+        // Fallback to regular print
+        window.print();
+    }
 }
 
 // Edit pass - close modal and return to form

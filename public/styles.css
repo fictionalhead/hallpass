@@ -490,62 +490,25 @@ main {
     background-color: #4f3366;
 }
 
+/* Print styles - DO NOT REMOVE - These are overridden by brother-label-print.js */
 @media print {
     @page {
-        /* Brother QL-820NWB with DK-2205 (62mm/2.4in continuous paper) */
-        /* DK-2205 is continuous white paper tape */
-        size: 2.4in 3.5in;
+        size: 62mm 100mm;
         margin: 0;
     }
-    
-    body {
-        margin: 0;
-        padding: 0;
+
+    body * {
+        visibility: hidden;
     }
-    
-    /* Hide everything using visibility */
-    .container,
-    .container *,
-    header,
-    header *,
-    main,
-    main *,
-    .modal-footer,
-    .modal-footer * {
-        visibility: hidden !important;
-        position: absolute !important;
+
+    #printable-pass-container,
+    #printable-pass-container * {
+        visibility: visible;
     }
-    
-    /* Show only the pass */
+
     #printable-pass-container {
-        visibility: visible !important;
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-    }
-    
-    #printable-pass {
-        visibility: visible !important;
-        position: fixed !important;
-        left: 0 !important;
-        top: 0 !important;
-        width: 2.4in !important;
-        height: 3.5in !important;
-        margin: 0 !important;
-        padding: 0.2in !important;
-        box-sizing: border-box !important;
-        background: white !important;
-        border: 2px solid black !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
-        page-break-inside: avoid !important;
-        page-break-after: avoid !important;
-        page-break-before: avoid !important;
-    }
-    
-    #printable-pass * {
-        visibility: visible !important;
-        position: static !important;
+        position: absolute;
+        left: 0;
+        top: 0;
     }
 }
