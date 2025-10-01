@@ -80,43 +80,17 @@
                 <div id="printable-pass" class="printable-pass"></div>
             </div>
             <div class="modal-footer">
-                <p id="modal-message">Your pass is ready.</p>
-
-                <!-- Brother Label Settings -->
-                <div id="brother-label-settings" class="label-settings" style="background: #f5f5f5; padding: 10px; border-radius: 5px; margin: 10px 0;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-                        <strong>Brother Label Type:</strong>
-                        <select id="label-type" style="padding: 5px; border-radius: 3px; border: 1px solid #ccc;">
-                            <option value="DK-2205" selected>DK-2205 (2.4" continuous paper)</option>
-                            <option value="DK-1202">DK-1202 (2.4"×3.9" die-cut)</option>
-                            <option value="DK-2251">DK-2251 (2.4" continuous B/R)</option>
-                            <option value="DK-1201">DK-1201 (1.1"×3.5" address)</option>
-                        </select>
-                    </div>
-                    <div style="font-size: 0.75rem; color: #666;">
-                        <p style="margin: 5px 0;">⚠️ <strong>IMPORTANT for DK-2205:</strong></p>
-                        <ul style="margin: 0; padding-left: 20px;">
-                            <li>In print dialog, select "Brother QL-820NWB"</li>
-                            <li>Click "More settings" or "Preferences"</li>
-                            <li>Set Paper Size to "62mm" or "62mm x 100mm"</li>
-                            <li>Set Media Type to "Continuous Length Tape"</li>
-                            <li>Ensure Auto Cut is enabled</li>
-                        </ul>
-                    </div>
-                </div>
+                <p id="modal-message">Your pass is ready to print.</p>
 
                 <div class="modal-buttons">
-                    <button id="edit-pass" class="edit-btn hidden">Edit</button>
-                    <button id="print-pass" class="print-btn">Print Pass</button>
-                    <button id="close-modal" class="close-btn">Close</button>
+                    <button id="print-pass" class="print-btn">Print</button>
+                    <button id="close-modal" class="close-btn">Cancel</button>
                 </div>
             </div>
         </div>
     </div>
 
     <script src="config.js"></script>
-    <script src="brother-label-print.js"></script>
-    <script src="brother-image-print.js"></script>
     <script src="pdf-generator.js"></script>
     <script src="app.js"></script>
 </body>

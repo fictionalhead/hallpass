@@ -78,7 +78,6 @@ function setupEventListeners() {
     const closeModalBtn = document.getElementById('close-modal');
     const closeXBtn = document.getElementById('modal-close-x');
     const printPassBtn = document.getElementById('print-pass');
-    const editPassBtn = document.getElementById('edit-pass');
     
     form.addEventListener('submit', handleFormSubmit);
     nameInput.addEventListener('input', validateForm);
@@ -86,7 +85,6 @@ function setupEventListeners() {
     closeModalBtn.addEventListener('click', closeModal);
     closeXBtn.addEventListener('click', closeModal);
     printPassBtn.addEventListener('click', printPass);
-    editPassBtn.addEventListener('click', editPass);
     
     // Close modal on escape key
     document.addEventListener('keydown', (e) => {
@@ -95,47 +93,15 @@ function setupEventListeners() {
         }
     });
     
-    // Debug print events
-    window.addEventListener('beforeprint', (e) => {
-        console.log('=== BEFORE PRINT EVENT ===');
-        const passes = document.querySelectorAll('.printable-pass');
-        console.log('Passes found before print:', passes.length);
-        
-        // Completely remove log entries from DOM during print
-        document.querySelectorAll('.log-entry').forEach(entry => {
-            entry.style.display = 'none !important';
-            entry.style.visibility = 'hidden !important';
-            entry.style.position = 'absolute !important';
-            entry.style.left = '-9999px !important';
-        });
-        
-        // Hide all other content
+    // Print events
+    window.addEventListener('beforeprint', () => {
+        // Hide all other content during print
         document.querySelector('.container').style.display = 'none';
-        document.querySelector('header').style.display = 'none';
-        document.querySelector('main').style.display = 'none';
-        
-        // Ensure only one pass and force single page
-        passes.forEach((pass, index) => {
-            if (index > 0) {
-                console.log('Removing extra pass before print:', index);
-                pass.remove();
-            }
-        });
     });
-    
-    window.addEventListener('afterprint', (e) => {
-        console.log('=== AFTER PRINT EVENT ===');
-        // Restore everything
-        document.querySelectorAll('.log-entry').forEach(entry => {
-            entry.style.display = '';
-            entry.style.visibility = '';
-            entry.style.position = '';
-            entry.style.left = '';
-        });
-        
+
+    window.addEventListener('afterprint', () => {
+        // Restore content after print
         document.querySelector('.container').style.display = '';
-        document.querySelector('header').style.display = '';
-        document.querySelector('main').style.display = '';
     });
 }
 
@@ -371,120 +337,30 @@ function showPassModal(pass, isNew = false) {
     printablePass.style.borderColor = HALLPASS_CONFIG.passStyle.borderColor;
     printablePass.style.backgroundColor = HALLPASS_CONFIG.passStyle.backgroundColor;
     
-    // Show/hide edit button based on whether this is a new pass
-    const editBtn = document.getElementById('edit-pass');
+    // Update modal message
     const modalMessage = document.getElementById('modal-message');
-    if (isNew) {
-        editBtn.classList.remove('hidden');
-        modalMessage.textContent = 'Review your pass before printing.';
-    } else {
-        editBtn.classList.add('hidden');
-        modalMessage.textContent = 'Viewing pass.';
-    }
+    modalMessage.textContent = isNew ? 'Your pass is ready to print.' : 'Viewing pass.'
     
     modal.classList.remove('hidden');
 }
 
-// Print pass with Brother label printer configuration
+// Print pass
 async function printPass() {
-    console.log('=== BROTHER LABEL PRINTING ===');
-
-    // Get selected label type
-    const labelType = document.getElementById('label-type')?.value || 'DK-2205';
-    console.log('Selected label type:', labelType);
-    console.log('Printing to Brother QL-820NWB');
-    
     // If this is a new pass, save it to the database first
     if (isNewPass && currentPass) {
         // Add to local log
         passLog.unshift(currentPass);
         updatePassLog();
-        
+
         // Save to backend
         await savePassToBackend(currentPass);
-        
+
         // Mark as no longer new
         isNewPass = false;
     }
-    
-    // Check all printable passes in the DOM
-    const allPasses = document.querySelectorAll('.printable-pass');
-    console.log('Number of .printable-pass elements found:', allPasses.length);
-    
-    // Check for log entries that might be printing
-    const logEntries = document.querySelectorAll('.log-entry');
-    console.log('Number of log entries in DOM:', logEntries.length);
-    console.log('Current passLog array length:', passLog.length);
-    
-    // Check pass internal structure
-    const passFooterItems = document.querySelectorAll('.pass-footer-item');
-    console.log('Number of footer items:', passFooterItems.length);
-    
-    const passFields = document.querySelectorAll('.pass-field');
-    console.log('Number of pass fields:', passFields.length);
-    
-    // Check the container
-    const container = document.getElementById('printable-pass-container');
-    console.log('Container children:', container.children.length);
-    console.log('Container HTML length:', container.innerHTML.length);
-    
-    // Check modal visibility
-    const modal = document.getElementById('pass-modal');
-    console.log('Modal classes:', modal.className);
-    console.log('Modal is hidden:', modal.classList.contains('hidden'));
-    
-    // Check for any other elements that might be printing
-    const allVisibleElements = document.querySelectorAll('*:not(.hidden)');
-    let visibleDuringPrint = 0;
-    allVisibleElements.forEach(el => {
-        const styles = window.getComputedStyle(el);
-        if (styles.visibility !== 'hidden') {
-            visibleDuringPrint++;
-        }
-    });
-    console.log('Total visible elements:', visibleDuringPrint);
-    
-    // Log the actual pass content
-    const passElement = document.getElementById('printable-pass');
-    if (passElement) {
-        console.log('Pass element exists');
-        console.log('Pass element height:', passElement.offsetHeight);
-        console.log('Pass element width:', passElement.offsetWidth);
-        const computedStyle = window.getComputedStyle(passElement);
-        console.log('Pass computed height:', computedStyle.height);
-        console.log('Pass computed width:', computedStyle.width);
-    }
-    
-    // Ensure only the current pass is visible for printing
-    allPasses.forEach((pass, index) => {
-        if (index > 0) {
-            console.log('Removing duplicate pass at index:', index);
-            pass.remove();
-        }
-    });
-    
-    console.log('=== END BROTHER LABEL PRINTING ===');
 
-    // Use Brother label printer module if available
-    if (window.BrotherLabelPrinter) {
-        window.BrotherLabelPrinter.printLabel(labelType);
-    } else {
-        // Fallback to regular print
-        window.print();
-    }
-}
-
-// Edit pass - close modal and return to form
-function editPass() {
-    const modal = document.getElementById('pass-modal');
-    modal.classList.add('hidden');
-    
-    // Clear the entire container
-    const container = document.getElementById('printable-pass-container');
-    container.innerHTML = '';
-    
-    // Don't reset the form - keep the values for editing
-    // The user can modify and resubmit
+    // Simply trigger the browser's print dialog
+    window.print();
 }
 
 // Close modal

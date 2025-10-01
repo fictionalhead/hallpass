@@ -1,5 +1,5 @@
-// PDF Generator for Brother QL-820NWB Labels
-// Uses jsPDF to create proper PDFs that Brother printers accept
+// PDF Generator for Hall Passes
+// Uses jsPDF to create printable PDFs
 
 class PDFLabelGenerator {
     constructor() {
@@ -15,76 +15,76 @@ class PDFLabelGenerator {
             return;
         }
 
-        // Create PDF with exact Brother DK-2205 dimensions
+        // Create PDF with standard dimensions
         const doc = new this.jsPDF({
             orientation: 'portrait',
-            unit: 'mm',
-            format: [62, 100] // DK-2205 label size
+            unit: 'in',
+            format: [3, 4] // Standard pass size
         });
 
         // Set up fonts and colors
         doc.setTextColor(0, 0, 0);
 
         // Draw border
-        doc.setLineWidth(0.5);
-        doc.rect(2, 2, 58, 96);
+        doc.setLineWidth(0.02);
+        doc.rect(0.1, 0.1, 2.8, 3.8);
 
         // Header section
         doc.setFontSize(14);
         doc.setFont(undefined, 'bold');
         const schoolName = passData.schoolName || 'WYOMING PUBLIC SCHOOLS';
-        doc.text(schoolName, 31, 10, { align: 'center' });
+        doc.text(schoolName, 1.5, 0.5, { align: 'center' });
 
         doc.setFontSize(18);
-        doc.text('HALL PASS', 31, 18, { align: 'center' });
+        doc.text('HALL PASS', 1.5, 0.8, { align: 'center' });
 
         // Header line
-        doc.setLineWidth(0.5);
-        doc.line(5, 22, 57, 22);
+        doc.setLineWidth(0.02);
+        doc.line(0.2, 1.0, 2.8, 1.0);
 
         // Pass content
         doc.setFontSize(11);
-        let yPos = 32;
+        let yPos = 1.3;
 
         // Name field
         doc.setFont(undefined, 'bold');
-        doc.text('NAME:', 6, yPos);
+        doc.text('NAME:', 0.3, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(passData.name || '', 22, yPos);
-        yPos += 10;
+        doc.text(passData.name || '', 0.9, yPos);
+        yPos += 0.4;
 
         // Location field
         doc.setFont(undefined, 'bold');
-        doc.text('LOCATION:', 6, yPos);
+        doc.text('LOCATION:', 0.3, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(passData.location || '', 30, yPos);
-        yPos += 10;
+        doc.text(passData.location || '', 1.2, yPos);
+        yPos += 0.4;
 
         // Time Out field
         doc.setFont(undefined, 'bold');
-        doc.text('TIME OUT:', 6, yPos);
+        doc.text('TIME OUT:', 0.3, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(passData.timeOut || '', 29, yPos);
-        yPos += 10;
+        doc.text(passData.timeOut || '', 1.2, yPos);
+        yPos += 0.4;
 
         // Date field
         doc.setFont(undefined, 'bold');
-        doc.text('DATE:', 6, yPos);
+        doc.text('DATE:', 0.3, yPos);
         doc.setFont(undefined, 'normal');
-        doc.text(passData.date || '', 20, yPos);
+        doc.text(passData.date || '', 0.8, yPos);
 
         // Footer line
-        doc.setLineWidth(0.3);
-        doc.line(5, 85, 57, 85);
+        doc.setLineWidth(0.01);
+        doc.line(0.2, 3.3, 2.8, 3.3);
 
         // Teacher info at bottom
         doc.setFontSize(9);
-        doc.text(passData.teacherEmail || '', 31, 91, { align: 'center' });
+        doc.text(passData.teacherEmail || '', 1.5, 3.5, { align: 'center' });
 
         // Timestamp
         doc.setFontSize(7);
         const timestamp = new Date().toLocaleString();
-        doc.text('Generated: ' + timestamp, 31, 95, { align: 'center' });
+        doc.text('Generated: ' + timestamp, 1.5, 3.7, { align: 'center' });
 
         // Output options
         if (autoprint) {

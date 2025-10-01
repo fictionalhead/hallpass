@@ -18,13 +18,13 @@ const HALLPASS_CONFIG = {
         'Other'
     ],
     
-    // Pass dimensions - Set for Brother QL-820NWB with DK-2205 roll
+    // Pass dimensions
     passDimensions: {
-        width: "2.4in",
-        height: "3.5in"
+        width: "3in",
+        height: "4in"
     },
-    
-    // Pass styling - Optimized for black and white printing
+
+    // Pass styling
     passStyle: {
         borderWidth: "4px",
         borderColor: "#000000",

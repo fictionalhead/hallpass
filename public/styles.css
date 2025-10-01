@@ -453,7 +453,6 @@ main {
 }
 
 .print-btn,
-.edit-btn,
 .close-btn {
     padding: 0.5rem 1.5rem;
     font-weight: bold;
@@ -472,15 +471,6 @@ main {
     background-color: #218838;
 }
 
-.edit-btn {
-    background-color: #ffc107;
-    color: #333;
-}
-
-.edit-btn:hover {
-    background-color: #e0a800;
-}
-
 .close-btn {
     background-color: #644186;
     color: white;
@@ -490,11 +480,11 @@ main {
     background-color: #4f3366;
 }
 
-/* Print styles - DO NOT REMOVE - These are overridden by brother-label-print.js */
+/* Print styles */
 @media print {
     @page {
-        size: 62mm 100mm;
-        margin: 0;
+        size: auto;
+        margin: 0.5in;
     }
 
     body * {
