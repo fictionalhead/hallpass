@@ -502,11 +502,15 @@ async function printPass() {
     `);
     printWindow.document.close();
 
-    // Wait for content to load, then print and close
-    setTimeout(() => {
+    // Wait for content to load, then print
+    printWindow.onload = () => {
+        printWindow.focus();
         printWindow.print();
-        printWindow.close();
-    }, 250);
+        // Don't auto-close - let user close it or it will close after print
+        printWindow.onafterprint = () => {
+            printWindow.close();
+        };
+    };
 }
 
 // Close modal
