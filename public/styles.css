@@ -54,7 +54,7 @@ header {
 
 header h1 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.5rem;
+    font-size: 1.75rem;
     color: #644186;
     margin: 0;
     font-weight: 700;
@@ -72,13 +72,13 @@ header p {
 
 main {
     display: grid;
-    grid-template-columns: 2fr 1fr;
+    grid-template-columns: 1fr;
     gap: 2rem;
 }
 
-@media (max-width: 768px) {
+@media (min-width: 1200px) {
     main {
-        grid-template-columns: 1fr;
+        grid-template-columns: 2fr 1fr;
     }
 }
 
@@ -96,18 +96,18 @@ main {
 .form-group label {
     display: block;
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.5rem;
     font-weight: 700;
     color: #644186;
-    margin-bottom: 0.5rem;
+    margin-bottom: 0.75rem;
 }
 
 .form-group input {
     width: 100%;
-    padding: 0.75rem 1rem;
-    border: 1px solid #6d6d6d;
-    border-radius: 0.5rem;
-    font-size: 1rem;
+    padding: 1rem 1.25rem;
+    border: 2px solid #6d6d6d;
+    border-radius: 0.75rem;
+    font-size: 1.25rem;
     transition: all 0.2s;
 }
 
@@ -124,11 +124,11 @@ main {
 }
 
 .location-btn {
-    padding: 0.5rem 1rem;
+    padding: 1rem 1.5rem;
     border: none;
     border-radius: 2rem;
     font-weight: 600;
-    font-size: 0.875rem;
+    font-size: 1.125rem;
     cursor: pointer;
     transition: all 0.2s;
     background-color: #f8f9fa;
@@ -136,7 +136,8 @@ main {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    border: 1px solid #6d6d6d;
+    border: 2px solid #6d6d6d;
+    min-height: 48px;
 }
 
 .location-btn:hover {
@@ -153,16 +154,17 @@ main {
 
 .submit-btn {
     width: 100%;
-    padding: 0.75rem 1.5rem;
+    padding: 1.25rem 1.5rem;
     background-color: #644186;
     color: white;
     font-weight: bold;
-    font-size: 1.125rem;
+    font-size: 1.5rem;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     cursor: pointer;
     box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     transition: all 0.3s;
+    min-height: 60px;
 }
 
 .submit-btn:hover:not(:disabled) {
@@ -187,7 +189,7 @@ main {
 
 .log-section h2 {
     font-family: 'Montserrat', sans-serif;
-    font-size: 1.25rem;
+    font-size: 1.75rem;
     color: #644186;
     font-weight: 700;
     margin-bottom: 1rem;
@@ -215,13 +217,14 @@ main {
 
 .log-entry {
     background-color: #f8f9fa;
-    padding: 0.75rem;
-    margin-bottom: 0.75rem;
-    border-radius: 0.5rem;
-    border: 1px solid #6d6d6d;
+    padding: 1.25rem;
+    margin-bottom: 1rem;
+    border-radius: 0.75rem;
+    border: 2px solid #6d6d6d;
     cursor: pointer;
     transition: all 0.2s ease;
     position: relative;
+    min-height: 60px;
 }
 
 .log-entry:hover {
@@ -262,23 +265,24 @@ main {
 .log-entry-name {
     font-weight: 600;
     color: #644186;
+    font-size: 1.25rem;
 }
 
 .log-entry-location {
-    font-size: 0.875rem;
+    font-size: 1.125rem;
     color: #6d6d6d;
-    margin: 0.25rem 0;
+    margin: 0.5rem 0;
 }
 
 .log-entry-time {
-    font-size: 0.75rem;
+    font-size: 1rem;
     color: #6d6d6d;
     text-align: right;
 }
 
 .error-message {
     color: #ef4444;
-    font-size: 0.875rem;
+    font-size: 1.125rem;
     font-weight: 500;
     margin-top: 0.5rem;
 }
@@ -458,12 +462,14 @@ main {
 
 .print-btn,
 .close-btn {
-    padding: 0.5rem 1.5rem;
+    padding: 1rem 2rem;
     font-weight: bold;
     border: none;
-    border-radius: 0.5rem;
+    border-radius: 0.75rem;
     cursor: pointer;
     transition: background-color 0.2s;
+    font-size: 1.25rem;
+    min-height: 56px;
 }
 
 .print-btn {
@@ -487,28 +493,81 @@ main {
 /* Print styles - MUNBYN thermal printer (72mm width roll, auto-cut) */
 @media print {
     @page {
-        size: 72mm auto;
+        size: 72mm 100mm;
         margin: 0;
     }
 
-    body * {
-        visibility: hidden;
+    * {
+        -webkit-print-color-adjust: exact !important;
+        print-color-adjust: exact !important;
     }
 
-    #printable-pass-container,
-    #printable-pass-container * {
-        visibility: visible;
+    html, body {
+        margin: 0 !important;
+        padding: 0 !important;
+        width: 72mm !important;
+        height: auto !important;
+        overflow: hidden !important;
+    }
+
+    body > *:not(#printable-pass-container) {
+        display: none !important;
+    }
+
+    .modal {
+        position: static !important;
+        background: none !important;
+    }
+
+    .modal-content {
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+        background: none !important;
+        max-width: none !important;
     }
 
     #printable-pass-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
+        position: static !important;
+        width: 72mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: visible !important;
+    }
+
+    #printable-pass {
+        width: 72mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
     }
 
     .printable-pass {
-        margin: 0;
-        width: 72mm;
+        width: 72mm !important;
+        height: auto !important;
+        margin: 0 !important;
+        page-break-inside: avoid !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+    }
+
+    /* Hide all UI elements */
+    .modal-footer,
+    .modal-buttons,
+    .modal-close-x,
+    button,
+    #modal-message,
+    #print-pass,
+    #close-modal {
+        display: none !important;
+        visibility: hidden !important;
     }
 }
