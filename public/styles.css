@@ -493,20 +493,8 @@ main {
 /* Print styles - MUNBYN thermal printer (72mm width roll, auto-cut) */
 @media print {
     @page {
-        size: 72mm 84mm;
+        size: 72mm auto;
         margin: 0;
-    }
-
-    html {
-        height: 84mm;
-        overflow: hidden;
-    }
-
-    body {
-        margin: 0;
-        padding: 0;
-        height: 84mm;
-        overflow: hidden;
     }
 
     body * {
@@ -522,47 +510,11 @@ main {
         position: absolute;
         left: 0;
         top: 0;
-        height: 84mm;
-        overflow: hidden;
-    }
-
-    /* Only show the FIRST printable pass element */
-    .printable-pass:not(:first-child),
-    #printable-pass:not(:first-child) {
-        display: none !important;
-        visibility: hidden !important;
-        page-break-before: always !important;
-    }
-
-    .printable-pass:first-child,
-    #printable-pass:first-child {
-        margin: 0;
-        width: 72mm;
-        height: 84mm;
-        max-height: 84mm;
-        page-break-after: avoid !important;
-        page-break-inside: avoid !important;
-        overflow: hidden;
+        width: 100%;
     }
 
     .printable-pass {
         margin: 0;
         width: 72mm;
-    }
-
-    .pass-header {
-        margin-bottom: 0.4rem;
-    }
-
-    .pass-body {
-        margin: 0.5rem 0;
-    }
-
-    .pass-field {
-        margin-bottom: 0.75rem;
-    }
-
-    .pass-footer {
-        margin-top: 0.5rem;
     }
 }
