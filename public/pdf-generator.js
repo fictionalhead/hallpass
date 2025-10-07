@@ -139,42 +139,9 @@ class PDFLabelGenerator {
         return data;
     }
 
-    // Add PDF buttons to the UI
+    // PDF buttons removed - using simple print instead for MUNBYN thermal printer
     addPDFButtons() {
-        const printBtn = document.getElementById('print-pass');
-        if (!printBtn) return;
-
-        // Create PDF download button
-        const pdfBtn = document.createElement('button');
-        pdfBtn.textContent = '📄 Save as PDF';
-        pdfBtn.className = 'print-btn';
-        pdfBtn.style.marginLeft = '10px';
-        pdfBtn.style.background = '#17a2b8';
-        pdfBtn.onclick = (e) => {
-            e.preventDefault();
-            const passData = this.getPassDataFromDOM();
-            if (passData) {
-                this.generatePassPDF(passData, false);
-            }
-        };
-
-        // Create PDF print button
-        const pdfPrintBtn = document.createElement('button');
-        pdfPrintBtn.textContent = '🖨️ PDF Print';
-        pdfPrintBtn.className = 'print-btn';
-        pdfPrintBtn.style.marginLeft = '10px';
-        pdfPrintBtn.style.background = '#6f42c1';
-        pdfPrintBtn.onclick = (e) => {
-            e.preventDefault();
-            const passData = this.getPassDataFromDOM();
-            if (passData) {
-                this.generatePassPDF(passData, true);
-            }
-        };
-
-        // Add buttons
-        printBtn.parentNode.insertBefore(pdfBtn, printBtn.nextSibling);
-        pdfBtn.parentNode.insertBefore(pdfPrintBtn, pdfBtn.nextSibling);
+        // No longer adding PDF buttons - removed for direct thermal printing
     }
 }
 

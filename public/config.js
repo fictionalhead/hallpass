@@ -18,10 +18,10 @@ const HALLPASS_CONFIG = {
         'Other'
     ],
     
-    // Pass dimensions
+    // Pass dimensions (MUNBYN printer: 72mm width, compact height for auto-cut)
     passDimensions: {
-        width: "3in",
-        height: "4in"
+        width: "2.83in",
+        height: "3.5in"
     },
 
     // Pass styling

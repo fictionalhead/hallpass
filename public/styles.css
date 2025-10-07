@@ -311,7 +311,7 @@ main {
 }
 
 .printable-pass {
-    width: 2.4in;
+    width: 2.83in;
     height: 3.5in;
     margin: 0 auto 1.5rem;
     border: 2px solid #000000;
@@ -480,11 +480,11 @@ main {
     background-color: #4f3366;
 }
 
-/* Print styles */
+/* Print styles - MUNBYN thermal printer (72mm width roll, auto-cut) */
 @media print {
     @page {
-        size: auto;
-        margin: 0.5in;
+        size: 72mm auto;
+        margin: 0;
     }
 
     body * {
@@ -500,5 +500,11 @@ main {
         position: absolute;
         left: 0;
         top: 0;
+        width: 100%;
+    }
+
+    .printable-pass {
+        margin: 0;
+        width: 72mm;
     }
 }
