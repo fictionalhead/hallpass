@@ -572,36 +572,32 @@ main {
     #printable-pass,
     .printable-pass {
         width: 2.83in !important;
-        height: auto !important;
-        max-height: 3.5in !important;
+        height: 3.5in !important;
         margin: 0 !important;
         padding: 0.2in !important;
         box-sizing: border-box !important;
         display: flex !important;
         flex-direction: column !important;
         justify-content: flex-start !important;
-        gap: 0.3rem !important;
         page-break-after: avoid !important;
         page-break-before: avoid !important;
         page-break-inside: avoid !important;
     }
 
     .pass-header {
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0.4rem !important;
     }
 
     .pass-body {
         margin: 0.5rem 0 !important;
-        display: flex !important;
-        flex-direction: column !important;
-        gap: 0.5rem !important;
+        flex-grow: 1 !important;
     }
 
     .pass-field {
-        margin-bottom: 0.5rem !important;
+        margin-bottom: 0.75rem !important;
     }
 
     .pass-footer {
-        margin-top: 0.5rem !important;
+        margin-top: auto !important;
     }
 }
