@@ -493,94 +493,75 @@ main {
 /* Print styles - MUNBYN thermal printer (72mm width roll, auto-cut) */
 @media print {
     @page {
-        size: 2.83in 3.5in;
+        size: 72mm auto;
         margin: 0;
     }
 
     * {
-        margin: 0 !important;
-        padding: 0 !important;
+        box-sizing: border-box;
     }
 
-    html, body {
-        width: 2.83in !important;
-        height: 3.5in !important;
-        margin: 0 !important;
-        padding: 0 !important;
-        overflow: hidden !important;
+    html {
+        margin: 0;
+        padding: 0;
+        width: 72mm;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        width: 72mm;
+        height: auto;
     }
 
     /* Hide everything except the pass */
-    body > * {
-        display: none !important;
-    }
-
-    #pass-modal {
-        display: block !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 2.83in !important;
-        height: 3.5in !important;
-        background: white !important;
-        margin: 0 !important;
-        padding: 0 !important;
-    }
-
-    .modal {
-        display: block !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-        width: 2.83in !important;
-        height: 3.5in !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
-    }
-
-    .modal-content {
-        width: 2.83in !important;
-        height: 3.5in !important;
-        max-width: none !important;
-        padding: 0 !important;
-        margin: 0 !important;
-        box-shadow: none !important;
-        border-radius: 0 !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
-    }
-
+    .container,
+    header,
+    main,
     .modal-footer,
     .modal-buttons,
     .modal-close-x,
-    button,
-    #modal-message {
+    button {
         display: none !important;
     }
 
+    .modal {
+        background: transparent !important;
+        position: relative !important;
+        height: auto !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        width: 72mm !important;
+    }
+
+    .modal-content {
+        box-shadow: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        max-width: 72mm !important;
+        width: 72mm !important;
+        height: auto !important;
+    }
+
     #printable-pass-container {
-        width: 2.83in !important;
-        height: 3.5in !important;
+        position: relative !important;
         margin: 0 !important;
         padding: 0 !important;
-        position: absolute !important;
-        top: 0 !important;
-        left: 0 !important;
+        width: 72mm !important;
+        height: auto !important;
     }
 
     #printable-pass,
     .printable-pass {
-        width: 2.83in !important;
-        height: 3.5in !important;
+        width: 72mm !important;
+        height: auto !important;
         margin: 0 !important;
-        padding: 0.2in !important;
-        box-sizing: border-box !important;
-        display: flex !important;
-        flex-direction: column !important;
-        justify-content: space-between !important;
+        padding: 5mm !important;
         page-break-after: avoid !important;
         page-break-before: avoid !important;
         page-break-inside: avoid !important;
+        display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
     }
 }
