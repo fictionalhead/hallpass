@@ -93,16 +93,7 @@ function setupEventListeners() {
         }
     });
     
-    // Print events
-    window.addEventListener('beforeprint', () => {
-        // Hide all other content during print
-        document.querySelector('.container').style.display = 'none';
-    });
-
-    window.addEventListener('afterprint', () => {
-        // Restore content after print
-        document.querySelector('.container').style.display = '';
-    });
+    // Print events - removed to prevent conflicts with CSS print styles
 }
 
 // Handle location selection
@@ -311,16 +302,25 @@ function viewPassByIndex(index) {
 function showPassModal(pass, isNew = false) {
     const modal = document.getElementById('pass-modal');
     const container = document.getElementById('printable-pass-container');
-    
+
     const date = new Date(pass.timestamp);
-    
-    // Clear the entire container and recreate the pass element to ensure clean slate
+
+    // COMPLETELY clear the container to prevent duplicates
     container.innerHTML = '';
+
+    // Remove any existing printable-pass elements anywhere in the document
+    const existingPasses = document.querySelectorAll('.printable-pass, #printable-pass');
+    existingPasses.forEach(el => el.remove());
+
+    // Create ONE new pass element
     const printablePass = document.createElement('div');
     printablePass.id = 'printable-pass';
     printablePass.className = 'printable-pass';
     container.appendChild(printablePass);
-    
+
+    // Debug: Log to verify only one element exists
+    console.log('Creating pass. Total .printable-pass elements:', document.querySelectorAll('.printable-pass').length);
+
     printablePass.innerHTML = `
         <div class="pass-header">
             <div class="pass-school-name">${escapeHtml(HALLPASS_CONFIG.school.name)}</div>
