@@ -493,28 +493,89 @@ main {
 /* Print styles - MUNBYN thermal printer (72mm width roll, auto-cut) */
 @media print {
     @page {
-        size: 72mm auto;
+        size: 2.83in 3.5in;
         margin: 0;
     }
 
-    body * {
-        visibility: hidden;
+    * {
+        margin: 0 !important;
+        padding: 0 !important;
     }
 
-    #printable-pass-container,
-    #printable-pass-container * {
-        visibility: visible;
+    html, body {
+        width: 2.83in !important;
+        height: 3.5in !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        overflow: hidden !important;
+    }
+
+    /* Hide everything except the pass */
+    body > * {
+        display: none !important;
+    }
+
+    #pass-modal {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 2.83in !important;
+        height: 3.5in !important;
+        background: white !important;
+        margin: 0 !important;
+        padding: 0 !important;
+    }
+
+    .modal {
+        display: block !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
+        width: 2.83in !important;
+        height: 3.5in !important;
+    }
+
+    .modal-content {
+        width: 2.83in !important;
+        height: 3.5in !important;
+        max-width: none !important;
+        padding: 0 !important;
+        margin: 0 !important;
+        box-shadow: none !important;
+        border-radius: 0 !important;
+    }
+
+    .modal-footer,
+    .modal-buttons,
+    .modal-close-x,
+    button,
+    #modal-message {
+        display: none !important;
     }
 
     #printable-pass-container {
-        position: absolute;
-        left: 0;
-        top: 0;
-        width: 100%;
+        width: 2.83in !important;
+        height: 3.5in !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        position: absolute !important;
+        top: 0 !important;
+        left: 0 !important;
     }
 
+    #printable-pass,
     .printable-pass {
-        margin: 0;
-        width: 72mm;
+        width: 2.83in !important;
+        height: 3.5in !important;
+        margin: 0 !important;
+        padding: 0.2in !important;
+        box-sizing: border-box !important;
+        display: flex !important;
+        flex-direction: column !important;
+        justify-content: space-between !important;
+        page-break-after: avoid !important;
+        page-break-before: avoid !important;
+        page-break-inside: avoid !important;
     }
 }
