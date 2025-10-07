@@ -501,9 +501,15 @@ main {
         visibility: hidden;
     }
 
+    /* Only show the specific pass container and its contents */
     #printable-pass-container,
     #printable-pass-container * {
         visibility: visible;
+    }
+
+    /* Hide everything else including any clones */
+    body > *:not(#pass-modal) {
+        display: none !important;
     }
 
     #printable-pass-container {
@@ -511,6 +517,13 @@ main {
         left: 0;
         top: 0;
         width: 100%;
+    }
+
+    /* Only render ONE pass - hide any duplicates */
+    #printable-pass ~ #printable-pass,
+    .printable-pass ~ .printable-pass {
+        display: none !important;
+        visibility: hidden !important;
     }
 
     .printable-pass {
