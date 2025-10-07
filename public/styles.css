@@ -528,12 +528,14 @@ main {
     }
 
     .modal {
-        display: block !important;
+        display: flex !important;
         position: absolute !important;
         top: 0 !important;
         left: 0 !important;
         width: 2.83in !important;
         height: 3.5in !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
     }
 
     .modal-content {
@@ -544,6 +546,9 @@ main {
         margin: 0 !important;
         box-shadow: none !important;
         border-radius: 0 !important;
+        display: flex !important;
+        align-items: flex-start !important;
+        justify-content: flex-start !important;
     }
 
     .modal-footer,
