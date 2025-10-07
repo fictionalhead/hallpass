@@ -493,15 +493,25 @@ main {
 /* Print styles - MUNBYN thermal printer (72mm width roll, auto-cut) */
 @media print {
     @page {
-        size: 72mm 85mm;
+        size: 72mm auto;
         margin: 0;
     }
 
-    html, body {
+    * {
+        box-sizing: border-box;
+    }
+
+    html {
         margin: 0;
         padding: 0;
-        height: 85mm;
-        overflow: hidden;
+        width: 72mm;
+    }
+
+    body {
+        margin: 0;
+        padding: 0;
+        width: 72mm;
+        height: auto;
     }
 
     /* Hide everything except the pass */
@@ -517,47 +527,41 @@ main {
 
     .modal {
         background: transparent !important;
-        position: static !important;
+        position: relative !important;
         height: auto !important;
         padding: 0 !important;
         margin: 0 !important;
+        width: 72mm !important;
     }
 
     .modal-content {
         box-shadow: none !important;
         padding: 0 !important;
         margin: 0 !important;
-        max-width: none !important;
+        max-width: 72mm !important;
         width: 72mm !important;
-        display: block !important;
-        align-items: flex-start !important;
-        justify-content: flex-start !important;
+        height: auto !important;
     }
 
     #printable-pass-container {
-        position: static !important;
+        position: relative !important;
         margin: 0 !important;
         padding: 0 !important;
         width: 72mm !important;
-        display: block !important;
-        text-align: left !important;
+        height: auto !important;
     }
 
-    #printable-pass {
+    #printable-pass,
+    .printable-pass {
         width: 72mm !important;
         height: auto !important;
         margin: 0 !important;
+        padding: 5mm !important;
         page-break-after: avoid !important;
         page-break-before: avoid !important;
         page-break-inside: avoid !important;
-        display: block !important;
-    }
-
-    .printable-pass {
-        page-break-after: avoid !important;
-        page-break-before: avoid !important;
-        page-break-inside: avoid !important;
-        margin: 0 auto 0 0 !important;
         display: flex !important;
+        flex-direction: column !important;
+        box-sizing: border-box !important;
     }
 }
