@@ -258,17 +258,35 @@ function updatePassLog() {
         return;
     }
     
+    // Count passes per student for abuse detection (admin only)
+    const studentPassCounts = {};
+    if (isAdmin) {
+        passLog.forEach(entry => {
+            studentPassCounts[entry.name] = (studentPassCounts[entry.name] || 0) + 1;
+        });
+    }
+
     const logHTML = passLog.map((entry, index) => {
         const date = new Date(entry.timestamp);
-        const teacherInfo = isAdmin && entry.teacherEmail ? 
+        const teacherInfo = isAdmin && entry.teacherEmail ?
             `<div class="log-entry-teacher" style="color: #666; font-size: 0.85rem; font-style: italic;">Teacher: ${escapeHtml(entry.teacherEmail)}</div>` : '';
-        const deleteBtn = isAdmin ? 
+        const deleteBtn = isAdmin ?
             `<button class="delete-pass-btn" onclick="event.stopPropagation(); deletePass('${entry.id}')" title="Delete this pass">×</button>` : '';
+
+        // Add warning badge for students with multiple passes
+        const passCount = studentPassCounts[entry.name] || 0;
+        let warningBadge = '';
+        if (isAdmin && passCount >= 5) {
+            warningBadge = `<span style="background: #dc3545; color: white; padding: 0.15rem 0.4rem; border-radius: 12px; font-size: 0.7rem; font-weight: bold; margin-left: 0.5rem;">🚨 ${passCount}x</span>`;
+        } else if (isAdmin && passCount >= 3) {
+            warningBadge = `<span style="background: #ffc107; color: #333; padding: 0.15rem 0.4rem; border-radius: 12px; font-size: 0.7rem; font-weight: bold; margin-left: 0.5rem;">⚠️ ${passCount}x</span>`;
+        }
+
         return `
             <div class="log-entry" data-pass-index="${index}" onclick="viewPassByIndex(${index})">
                 ${deleteBtn}
                 <div class="log-entry-content">
-                    <div class="log-entry-name">${escapeHtml(entry.name)}</div>
+                    <div class="log-entry-name">${escapeHtml(entry.name)}${warningBadge}</div>
                     <div class="log-entry-location">to ${escapeHtml(entry.location)}</div>
                     <div class="log-entry-time">${formatTime(date)}</div>
                     ${teacherInfo}
@@ -420,37 +438,67 @@ function setupAdminView() {
     const filterDiv = document.createElement('div');
     filterDiv.style.cssText = 'margin-bottom: 1rem; padding: 1rem; background: #f8f9fa; border-radius: 8px;';
     filterDiv.innerHTML = `
-        <div style="display: flex; justify-content: space-between; align-items: center;">
-            <div>
-                <label style="margin-right: 1rem; font-weight: 500;">Filter by Teacher:</label>
-                <select id="teacher-filter" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
-                    <option value="all">All Teachers</option>
-                </select>
+        <div style="margin-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+                <div>
+                    <label style="margin-right: 1rem; font-weight: 500;">Filter by Teacher:</label>
+                    <select id="teacher-filter" style="padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="all">All Teachers</option>
+                    </select>
+                </div>
+                <div style="display: flex; gap: 0.5rem;">
+                    <button id="delete-teacher-passes" class="admin-action-btn" style="
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-weight: 500;
+                        display: none;
+                    " onclick="deleteTeacherPasses()">
+                        Delete Teacher's Passes
+                    </button>
+                    <button id="delete-all-passes" class="admin-action-btn" style="
+                        background: #dc3545;
+                        color: white;
+                        border: none;
+                        padding: 0.5rem 1rem;
+                        border-radius: 4px;
+                        cursor: pointer;
+                        font-weight: 500;
+                    " onclick="deleteAllPasses()">
+                        Delete All Passes
+                    </button>
+                </div>
             </div>
-            <div style="display: flex; gap: 0.5rem;">
-                <button id="delete-teacher-passes" class="admin-action-btn" style="
-                    background: #dc3545;
-                    color: white;
-                    border: none;
-                    padding: 0.5rem 1rem;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-weight: 500;
-                    display: none;
-                " onclick="deleteTeacherPasses()">
-                    Delete Teacher's Passes
+
+            <div style="display: grid; grid-template-columns: repeat(4, 1fr); gap: 1rem; border-top: 1px solid #ddd; padding-top: 1rem;">
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.25rem; font-size: 0.9rem;">Student Name:</label>
+                    <input type="text" id="student-name-filter" placeholder="Search by name..." style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.25rem; font-size: 0.9rem;">Location:</label>
+                    <select id="location-filter" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                        <option value="all">All Locations</option>
+                    </select>
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.25rem; font-size: 0.9rem;">Date From:</label>
+                    <input type="date" id="date-from-filter" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                </div>
+                <div>
+                    <label style="display: block; font-weight: 500; margin-bottom: 0.25rem; font-size: 0.9rem;">Date To:</label>
+                    <input type="date" id="date-to-filter" style="width: 100%; padding: 0.5rem; border-radius: 4px; border: 1px solid #ddd;">
+                </div>
+            </div>
+
+            <div style="margin-top: 1rem; display: flex; justify-content: space-between; align-items: center;">
+                <button id="clear-filters-btn" style="padding: 0.5rem 1rem; border-radius: 4px; border: 1px solid #644186; background: white; color: #644186; cursor: pointer; font-weight: 500;" onclick="clearAllFilters()">
+                    Clear Filters
                 </button>
-                <button id="delete-all-passes" class="admin-action-btn" style="
-                    background: #dc3545;
-                    color: white;
-                    border: none;
-                    padding: 0.5rem 1rem;
-                    border-radius: 4px;
-                    cursor: pointer;
-                    font-weight: 500;
-                " onclick="deleteAllPasses()">
-                    Delete All Passes
-                </button>
+                <div id="filter-stats" style="font-size: 0.9rem; color: #666; font-weight: 500;"></div>
             </div>
         </div>
     `;
@@ -459,6 +507,13 @@ function setupAdminView() {
 
 // Store all logs globally for filtering
 let allTeacherLogs = [];
+let currentFilters = {
+    teacher: 'all',
+    studentName: '',
+    location: 'all',
+    dateFrom: '',
+    dateTo: ''
+};
 
 // Load all teachers' logs (admin only)
 async function loadAllTeachersLogs() {
@@ -474,12 +529,12 @@ async function loadAllTeachersLogs() {
             // Clear and repopulate teacher filter
             if (data.teachers && data.teachers.length > 0) {
                 const filterSelect = document.getElementById('teacher-filter');
-                
+
                 // Clear existing options except "All Teachers"
                 while (filterSelect.options.length > 1) {
                     filterSelect.remove(1);
                 }
-                
+
                 // Add teacher options
                 data.teachers.forEach(teacher => {
                     const option = document.createElement('option');
@@ -487,14 +542,15 @@ async function loadAllTeachersLogs() {
                     option.textContent = teacher;
                     filterSelect.appendChild(option);
                 });
-                
+
                 // Remove old event listeners by cloning and replacing
                 const newFilterSelect = filterSelect.cloneNode(true);
                 filterSelect.parentNode.replaceChild(newFilterSelect, filterSelect);
-                
+
                 // Add fresh filter event listener
                 newFilterSelect.addEventListener('change', (e) => {
-                    filterLogsByTeacher(e.target.value, allTeacherLogs);
+                    currentFilters.teacher = e.target.value;
+                    applyAllFilters();
                     // Show/hide delete teacher passes button
                     const deleteTeacherBtn = document.getElementById('delete-teacher-passes');
                     if (e.target.value !== 'all') {
@@ -504,7 +560,20 @@ async function loadAllTeachersLogs() {
                     }
                 });
             }
-            
+
+            // Populate location filter with unique locations
+            const locationFilter = document.getElementById('location-filter');
+            const uniqueLocations = [...new Set(allTeacherLogs.map(log => log.location))].sort();
+            uniqueLocations.forEach(location => {
+                const option = document.createElement('option');
+                option.value = location;
+                option.textContent = location;
+                locationFilter.appendChild(option);
+            });
+
+            // Setup filter event listeners
+            setupAdminFilterListeners();
+
             updatePassLog();
         } else {
             const errorText = await response.text();
@@ -515,14 +584,129 @@ async function loadAllTeachersLogs() {
     }
 }
 
-// Filter logs by teacher
-function filterLogsByTeacher(teacherEmail, allLogs) {
-    if (teacherEmail === 'all') {
-        passLog = allLogs;
-    } else {
-        passLog = allLogs.filter(log => log.teacherEmail === teacherEmail);
+// Setup admin filter event listeners
+function setupAdminFilterListeners() {
+    const studentNameFilter = document.getElementById('student-name-filter');
+    const locationFilter = document.getElementById('location-filter');
+    const dateFromFilter = document.getElementById('date-from-filter');
+    const dateToFilter = document.getElementById('date-to-filter');
+
+    studentNameFilter.addEventListener('input', (e) => {
+        currentFilters.studentName = e.target.value.toLowerCase();
+        applyAllFilters();
+    });
+
+    locationFilter.addEventListener('change', (e) => {
+        currentFilters.location = e.target.value;
+        applyAllFilters();
+    });
+
+    dateFromFilter.addEventListener('change', (e) => {
+        currentFilters.dateFrom = e.target.value;
+        applyAllFilters();
+    });
+
+    dateToFilter.addEventListener('change', (e) => {
+        currentFilters.dateTo = e.target.value;
+        applyAllFilters();
+    });
+}
+
+// Apply all filters
+function applyAllFilters() {
+    let filtered = [...allTeacherLogs];
+
+    // Filter by teacher
+    if (currentFilters.teacher !== 'all') {
+        filtered = filtered.filter(log => log.teacherEmail === currentFilters.teacher);
     }
+
+    // Filter by student name
+    if (currentFilters.studentName) {
+        filtered = filtered.filter(log =>
+            log.name.toLowerCase().includes(currentFilters.studentName)
+        );
+    }
+
+    // Filter by location
+    if (currentFilters.location !== 'all') {
+        filtered = filtered.filter(log => log.location === currentFilters.location);
+    }
+
+    // Filter by date range
+    if (currentFilters.dateFrom) {
+        const fromDate = new Date(currentFilters.dateFrom);
+        fromDate.setHours(0, 0, 0, 0);
+        filtered = filtered.filter(log => {
+            const logDate = new Date(log.timestamp);
+            logDate.setHours(0, 0, 0, 0);
+            return logDate >= fromDate;
+        });
+    }
+
+    if (currentFilters.dateTo) {
+        const toDate = new Date(currentFilters.dateTo);
+        toDate.setHours(23, 59, 59, 999);
+        filtered = filtered.filter(log => {
+            const logDate = new Date(log.timestamp);
+            return logDate <= toDate;
+        });
+    }
+
+    passLog = filtered;
+    updateFilterStats(filtered);
     updatePassLog();
+}
+
+// Update filter statistics
+function updateFilterStats(filtered) {
+    const statsDiv = document.getElementById('filter-stats');
+    if (!statsDiv) return;
+
+    // Count passes per student
+    const studentCounts = {};
+    filtered.forEach(log => {
+        studentCounts[log.name] = (studentCounts[log.name] || 0) + 1;
+    });
+
+    const totalPasses = filtered.length;
+    const uniqueStudents = Object.keys(studentCounts).length;
+    const repeatOffenders = Object.entries(studentCounts)
+        .filter(([name, count]) => count >= 3)
+        .sort((a, b) => b[1] - a[1]);
+
+    let statsText = `Showing ${totalPasses} pass${totalPasses !== 1 ? 'es' : ''} from ${uniqueStudents} student${uniqueStudents !== 1 ? 's' : ''}`;
+
+    if (repeatOffenders.length > 0) {
+        statsText += ` | ⚠️ ${repeatOffenders.length} student${repeatOffenders.length !== 1 ? 's' : ''} with 3+ passes`;
+    }
+
+    statsDiv.innerHTML = statsText;
+}
+
+// Clear all filters
+function clearAllFilters() {
+    currentFilters = {
+        teacher: 'all',
+        studentName: '',
+        location: 'all',
+        dateFrom: '',
+        dateTo: ''
+    };
+
+    document.getElementById('teacher-filter').value = 'all';
+    document.getElementById('student-name-filter').value = '';
+    document.getElementById('location-filter').value = 'all';
+    document.getElementById('date-from-filter').value = '';
+    document.getElementById('date-to-filter').value = '';
+
+    // Hide delete teacher button
+    const deleteTeacherBtn = document.getElementById('delete-teacher-passes');
+    if (deleteTeacherBtn) {
+        deleteTeacherBtn.style.display = 'none';
+    }
+
+    applyAllFilters();
 }
 
 // Delete single pass

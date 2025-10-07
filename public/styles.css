@@ -312,7 +312,7 @@ main {
 
 .printable-pass {
     width: 2.83in;
-    height: 3.5in;
+    height: 3.3in;
     margin: 0 auto 1.5rem;
     border: 2px solid #000000;
     background-color: #ffffff;
@@ -321,28 +321,30 @@ main {
     flex-direction: column;
     justify-content: space-between;
     box-sizing: border-box;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-header {
     text-align: center;
-    border-bottom: 2px solid #000000;
     padding-bottom: 0.4rem;
     margin-bottom: 0.5rem;
 }
 
 .pass-school-name {
-    font-size: 0.7rem;
+    font-size: 0.9rem;
     font-weight: bold;
     color: #000000;
     line-height: 1.2;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-title {
-    font-size: 1rem;
-    font-weight: 900;
+    font-size: 1.3rem;
+    font-weight: 800;
     color: #000000;
     letter-spacing: 0.05em;
     margin-top: 0.2rem;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-body {
@@ -363,24 +365,24 @@ main {
 }
 
 .pass-field strong {
-    font-size: 0.65rem;
-    font-weight: 600;
+    font-size: 0.75rem;
+    font-weight: 500;
     color: #000000;
     margin-bottom: 0.2rem;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-field span {
-    font-size: 0.85rem;
+    font-size: 1rem;
     color: #000000;
-    font-weight: 500;
-    font-family: 'Courier New', monospace;
+    font-weight: 800;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-footer {
     display: flex;
     flex-direction: column;
     gap: 0.3rem;
-    border-top: 2px solid #000000;
     padding-top: 0.4rem;
     font-size: 0.625rem;
     color: #000000;
@@ -394,15 +396,17 @@ main {
 }
 
 .pass-footer-item strong {
-    font-size: 0.65rem;
+    font-size: 0.75rem;
     font-weight: 600;
     color: #000000;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-footer-item span {
-    font-size: 0.75rem;
+    font-size: 0.85rem;
     font-weight: 500;
     color: #000000;
+    font-family: 'Montserrat', sans-serif;
 }
 
 .pass-footer-item .time-blank {
